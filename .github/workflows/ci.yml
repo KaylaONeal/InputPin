@@ -1,0 +1,39 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    name: Unit tests (macOS)
+    runs-on: macos-14
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: swift test --enable-code-coverage
+      - run: python3 scripts/test_verify_assets.py
+      - name: Validate shell scripts
+        run: bash -n build.sh scripts/release.sh scripts/verify-release.sh
+      - name: Build universal development candidate
+        env:
+          ARCH: universal
+        run: bash build.sh
+      - name: Verify architectures and bundle
+        run: |
+          archs="$(lipo -archs build/InputPin.app/Contents/MacOS/InputPin)"
+          [[ "$archs" == "x86_64 arm64" || "$archs" == "arm64 x86_64" ]]
+          codesign --verify --strict build/InputPin.app
+          plutil -lint build/InputPin.app/Contents/Info.plist
+          build/InputPin.app/Contents/MacOS/InputPin --version
+      - name: Archive development candidate (not a public release)
+        run: ditto -c -k --keepParent build/InputPin.app build/InputPin-development.zip
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: InputPin-development-universal
+          path: build/InputPin-development.zip
+          retention-days: 7
