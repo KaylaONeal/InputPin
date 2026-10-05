@@ -4,13 +4,13 @@
 
 一个轻量、原生、透明的 macOS 菜单栏工具。系统切换到其他输入法时，自动恢复你选定的输入法。支持微信输入法、ABC，以及系统中已启用的其他键盘输入源。
 
-[Mac 安装包（准备中）](https://github.com/KaylaONeal/InputPin/releases/latest/download/InputPin-1.0.0-universal.dmg) · [English](../README.md)
+[安装方式](#安装) · [English](../README.md)
 
 ## 安装
 
-**当前状态：**源码与公证安装包正在进行首次发布验证，尚未正式发布。
+**当前状态：**brew 源码安装已发布并通过实际安装测试。Apple 正在处理公证，DMG 与二进制 Cask 尚未公开。
 
-打开 DMG，把 InputPin 拖入 Applications，然后启动。菜单栏的图钉可选择目标输入法、暂停固定或设置登录启动。
+安装后，菜单栏的图钉可选择目标输入法、暂停固定或设置登录启动。公证包通过验证后会发布到 [Releases](https://github.com/KaylaONeal/InputPin/releases)。
 
 ```sh
 brew install kaylaoneal/tap/inputpin

@@ -31,6 +31,8 @@ gh release create v1.0.0 --verify-tag --draft \
   dist/InputPin-1.0.0-universal.zip dist/InputPin-1.0.0-universal.dmg dist/SHA256SUMS
 ```
 
+If the source formula has already published this version tag, reuse that immutable tag and existing draft instead of creating or moving it.
+
 Download the draft assets and verify their checksums before publishing. Update the Homebrew tap with the DMG SHA-256, then publish the draft. Published assets and tags must not be overwritten; fix mistakes with a new version. The release workflow independently downloads public assets and verifies the signature, notarization, universal architectures and checksums.
 
 The CI workflow builds development candidates with ad hoc signatures. They are explicitly not public releases. No signing credentials are required in Actions.
