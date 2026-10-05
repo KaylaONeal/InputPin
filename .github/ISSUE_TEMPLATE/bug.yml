@@ -1,0 +1,33 @@
+name: Bug report
+description: Report unexpected input-source behavior or an app issue
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Please avoid sharing typed text, passwords, keychain files or signing credentials."
+  - type: input
+    id: version
+    attributes:
+      label: InputPin version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and chip
+      placeholder: "macOS 15.7, Apple M2"
+    validations:
+      required: true
+  - type: input
+    id: input
+    attributes:
+      label: Input source and affected app
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: "Include the expected and actual behavior. Does the panel say secure input is active?"
+    validations:
+      required: true
