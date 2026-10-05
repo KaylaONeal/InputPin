@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Swift-native-64748b" alt="Native Swift application">
 </p>
 <p align="center">
-  <a href="https://github.com/KaylaONeal/InputPin/releases/latest/download/InputPin-1.0.0-universal.dmg"><strong>Binary release (in preparation)</strong></a> ·
+  <a href="#install"><strong>Install for Mac ↓</strong></a> ·
   <a href="#homebrew">Homebrew</a> ·
   <a href="docs/README.zh-CN.md">简体中文</a>
 </p>
@@ -24,9 +24,9 @@ Choose WeType (微信输入法), ABC, or another enabled keyboard input source. 
 
 ## Install
 
-**Release status:** the first source and binary distributions are being prepared. Notarized app downloads and the binary cask are being prepared; they are not yet available.
+**Release status:** source installation is published and tested. Notarized app downloads and the binary cask are being prepared; they are not yet available.
 
-**Binary download (in preparation):** [Download the universal DMG](https://github.com/KaylaONeal/InputPin/releases/latest/download/InputPin-1.0.0-universal.dmg). Open it, drag InputPin into Applications, and launch it. Click the pin in your menu bar to choose an input source. You can also use the [ZIP release](https://github.com/KaylaONeal/InputPin/releases/latest).
+**Binary download (in preparation):** Apple notarization is processing. The universal DMG and ZIP will be listed on the [Releases page](https://github.com/KaylaONeal/InputPin/releases) after verification. Click the pin in your menu bar to choose an input source.
 
 Public binary assets will be Developer ID signed, Apple notarized, and stapled before publication. Both Apple Silicon and Intel are included. Requires macOS 13 Ventura or later. See [QA evidence and unverified cases](docs/QA.md).
 
