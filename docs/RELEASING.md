@@ -37,6 +37,8 @@ The CI workflow builds development candidates with ad hoc signatures. They are e
 
 ## Homebrew
 
+The source formula builds the tagged source archive locally with Xcode 15+ and ad hoc signing. Pin its tag archive SHA-256, install the bundle into the formula prefix and expose the CLI with a wrapper that executes inside the bundle. Run `brew style`, `brew audit`, a real `brew install` and `brew test`. The source formula and binary cask share a CLI name: install one distribution at a time.
+
 The maintained custom tap is `KaylaONeal/homebrew-tap`. The cask points to a fixed GitHub Release URL, includes the DMG SHA-256, requires macOS Ventura or later, installs the app and optional `inputpin` CLI, and preserves preferences on ordinary uninstall.
 
 Generate the cask from verified local assets with `python3 scripts/update-homebrew.py /path/to/homebrew-tap`. This re-runs full asset verification before changing the local tap checkout.

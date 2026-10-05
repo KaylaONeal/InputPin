@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Swift-native-64748b" alt="Native Swift application">
 </p>
 <p align="center">
-  <a href="https://github.com/KaylaONeal/InputPin/releases/latest/download/InputPin-1.0.0-universal.dmg"><strong>Download for Mac ↓</strong></a> ·
+  <a href="https://github.com/KaylaONeal/InputPin/releases/latest/download/InputPin-1.0.0-universal.dmg"><strong>Binary release (in preparation)</strong></a> ·
   <a href="#homebrew">Homebrew</a> ·
   <a href="docs/README.zh-CN.md">简体中文</a>
 </p>
@@ -24,24 +24,26 @@ Choose WeType (微信输入法), ABC, or another enabled keyboard input source. 
 
 ## Install
 
-**Direct download:** [Download the universal DMG](https://github.com/KaylaONeal/InputPin/releases/latest/download/InputPin-1.0.0-universal.dmg). Open it, drag InputPin into Applications, and launch it. Click the pin in your menu bar to choose an input source. You can also use the [ZIP release](https://github.com/KaylaONeal/InputPin/releases/latest).
+**Release status:** the first source and binary distributions are being prepared. Notarized app downloads and the binary cask are being prepared; they are not yet available.
 
-Release assets are Developer ID signed, Apple notarized, and stapled. Both Apple Silicon and Intel are included. Requires macOS 13 Ventura or later. See [QA evidence and unverified cases](docs/QA.md).
+**Binary download (in preparation):** [Download the universal DMG](https://github.com/KaylaONeal/InputPin/releases/latest/download/InputPin-1.0.0-universal.dmg). Open it, drag InputPin into Applications, and launch it. Click the pin in your menu bar to choose an input source. You can also use the [ZIP release](https://github.com/KaylaONeal/InputPin/releases/latest).
+
+Public binary assets will be Developer ID signed, Apple notarized, and stapled before publication. Both Apple Silicon and Intel are included. Requires macOS 13 Ventura or later. See [QA evidence and unverified cases](docs/QA.md).
 
 ### Homebrew
 
 ```sh
-brew install --cask kaylaoneal/tap/inputpin
+brew install kaylaoneal/tap/inputpin
 ```
 
-This uses the project's [custom Homebrew tap](https://github.com/KaylaONeal/homebrew-tap), with a pinned version and SHA-256 checksum. It is not a claim of inclusion in Homebrew's official catalog.
+This source formula builds locally and requires Xcode 15+ (Swift 5.9+). Open the installed app with `open "$(brew --prefix inputpin)/InputPin.app"`. It uses the project's [custom Homebrew tap](https://github.com/KaylaONeal/homebrew-tap), with a pinned version and SHA-256 checksum. It is not a claim of inclusion in Homebrew's official catalog.
 
 ```sh
-brew upgrade --cask kaylaoneal/tap/inputpin
-brew uninstall --cask inputpin
+brew upgrade kaylaoneal/tap/inputpin
+brew uninstall inputpin
 ```
 
-Turn off launch at login before uninstalling. Ordinary uninstall preserves your settings; `brew uninstall --zap --cask inputpin` also removes preferences.
+Turn off launch at login before uninstalling. Source-formula uninstall preserves your settings. Once the binary cask is published, `brew install --cask kaylaoneal/tap/inputpin` will install the notarized DMG directly.
 
 ## What it does
 
@@ -72,7 +74,7 @@ bash build.sh
 open build/InputPin.app
 ```
 
-Use `ARCH=universal bash build.sh` for both architectures. Development builds are ad hoc signed and are not the notarized distribution. The CLI supports `inputpin --list`, `--current`, `--version`, and `--select ID`; the brew cask installs the optional CLI alongside the app.
+Use `ARCH=universal bash build.sh` for both architectures. Development builds are ad hoc signed and are not the notarized distribution. The CLI supports `inputpin --list`, `--current`, `--version`, and `--select ID`; the brew formula installs the CLI alongside the app.
 
 ## Contribute
 
