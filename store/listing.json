@@ -1,5 +1,5 @@
 {
-  "status": "draft-not-submitted",
+  "status": "waiting-for-review",
   "platform": "MAC_OS",
   "bundleId": "io.github.kaylaoneal.InputPin",
   "category": "UTILITIES",
@@ -28,5 +28,8 @@
       "description": "固定你选择的 macOS 输入法。当系统切换到其他输入法时，InputPin 自动恢复你的选择。原生菜单栏弹窗，随时暂停，安全输入优先，开机启动由你决定。\n\n支持系统自带的输入源和已安装的输入法。InputPin 不安装输入法，也不控制输入法内部的中英文模式。启用固定时，手动切换到其他输入法也会被恢复。\n\n无需账户、订阅或辅助功能权限，不采集按键，不做统计追踪。源码在 GitHub 以 MIT 许可证公开；App Store 版为付费的便捷安装渠道。"
     }
   },
-  "reviewNotes": "InputPin is a menu bar utility using public Carbon Text Input Source APIs. No login or third-party input method is required: reviewers can test using two enabled Apple keyboard input sources. Select one in InputPin, switch to the other via the macOS input menu, and observe restoration. Turn off Keep this input source to allow switching freely. Secure input pauses restoration. The app has no global keyboard event monitor; an open panel has a temporary mouse-only dismissal monitor. Test launch-at-login only with explicit opt-in."
+  "reviewNotes": "InputPin is a menu bar utility using public Carbon Text Input Source APIs. No login or third-party input method is required: reviewers can test using two enabled Apple keyboard input sources. Select one in InputPin, switch to the other via the macOS input menu, and observe restoration. Turn off Keep this input source to allow switching freely. Secure input pauses restoration. The app has no global keyboard event monitor; an open panel has a temporary mouse-only dismissal monitor. Test launch-at-login only with explicit opt-in.",
+  "appStoreId": "6819264969",
+  "version": "1.0.2",
+  "buildNumber": "4"
 }

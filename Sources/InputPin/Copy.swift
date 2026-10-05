@@ -1,7 +1,8 @@
 import Foundation
 
 enum Copy {
-    static let chinese = Locale.preferredLanguages.first?.hasPrefix("zh") == true
+    static let chinese = (Bundle.main.object(forInfoDictionaryKey: "InputPinScreenshotLocale") as? String
+                          ?? Locale.preferredLanguages.first)?.hasPrefix("zh") == true
     static func text(_ english: String, _ chinese: String) -> String { self.chinese ? chinese : english }
     static let subtitle = text("Keep your input in place.", "让输入法，始终如你所选。")
     static let pinned = text("Pinned", "已固定")

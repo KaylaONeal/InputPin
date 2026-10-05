@@ -1,55 +1,66 @@
-# Mac App Store feasibility and automation
+# Mac App Store release automation
 
-InputPin can pursue a paid Mac App Store edition. Local sandbox tests establish technical feasibility, not App Review approval. The proposed price is **US$0.99 paid once**, with the United States as the base territory and Apple equalizing other currencies. The free MIT source and Homebrew distribution remain available.
+InputPin **1.0.2 (build 4)** was submitted on October 5, 2026 and is **Waiting for Review**. The United States base price is **US$0.99 paid once**. Release is configured as `AFTER_APPROVAL`; Apple approval and regional eligibility determine actual availability. No store download or paid installation has been verified yet. The MIT source and Homebrew source installation remain free.
 
-## Verified on October 5, 2026
+## Verified
 
-- A sandboxed copy of 1.0.1, with only `com.apple.security.app-sandbox`, enumerated ABC and WeType and passed the real integration test: three automatic restorations (215/500/533 ms), pause, resume, secure-input pause/recovery, and unavailable target.
-- The reproducible `APP_STORE` probe also passed the same integration test (211/511/525 ms). Its universal binary has macOS 13.0 minimum deployment metadata in both architectures.
-- The existing local App Store Connect API authorization returned HTTP 200. InputPin has no registered bundle ID or App Store Connect app record yet.
-- The current account's Paid Apps Agreement, bank, tax, and compliance statuses were active. No agreements or banking details were changed.
-- Apple Development, Apple Distribution, and Developer ID Application signing identities are present. No Mac Installer Distribution identity was found locally or through the certificate API. Developer ID notarization does not replace store signing or review.
+- Registered InputPin's application identity and created its App Store Connect record (Apple ID `6819264969`).
+- Generated and installed Mac Installer Distribution signing and a Mac App Store profile on the signing Mac. Existing Apple Distribution signing is used for the app. Private keys stay in the local Keychain/configuration.
+- Xcode archived/exported a signed sandboxed universal arm64/x86_64 installer, with macOS 13 minimum deployment, a privacy manifest and no network or temporary exception entitlements. Apple processed build 4 as `VALID`.
+- Uploaded English and Simplified Chinese descriptions and controlled native screenshots at 2560 × 1600. Screenshots show the actual SwiftUI controls using a presentation fixture; no personal desktop content is included.
+- Read back the live USA price point and confirmed USD 0.99. Selected all 175 territories; Apple's regional restrictions still apply.
+- Published the factual “Data Not Collected” privacy disclosure after the account holder confirmed Apple's accuracy/update commitment. Set age rating, copyright, utility category, export-compliance declaration, and review instructions. The app requires no login.
+- Submitted the exact processed build 4 for version 1.0.2; Apple's API returned `WAITING_FOR_REVIEW` and `AFTER_APPROVAL`.
+- Ten core tests and seven release safety tests pass. The sandbox feasibility probe previously passed three real restorations (211/511/525 ms), pause/resume, secure-input recovery and unavailable-source handling.
 
-Sleep/wake, login registration in a sandbox, VoiceOver, all supported macOS versions, the Xcode-exported store package, uploaded-build processing, review acceptance, and actual paid installation remain unverified. Test the final store-signed build with two Apple input sources as well as third-party input methods.
+Sleep/wake on real hardware, sandboxed login registration, VoiceOver, every supported macOS version, App Review acceptance and an actual paid installation remain unverified. Developer ID notarization for the direct-download channel is separate from store signing and review.
 
-## Reproduce the sandbox build
+## One-time signing setup
+
+Install full Xcode and `brew install xcodegen`. Use an App Store Connect API key already authorized for the relevant team. Create a private local JSON configuration with `private_key_path`, `key_id` and `issuer_id`; protect the key with mode 600. Reference the file with `INPUTPIN_APPLE_CONFIG`; never paste key contents into commands, GitHub, CI or chat.
 
 ```sh
+python3 scripts/bootstrap-store-signing.py
+```
+
+The script registers the app ID if absent, matches an existing local Apple Distribution private-key identity against Apple's certificate API, creates a local installer key/certificate if needed, and installs the matching profile. It never revokes other certificates. Multiple or missing identities stop the process for local inspection. The initial app record and privacy questionnaire use Apple's website; that one-time setup is complete for InputPin. Legal commitments require the account holder's confirmation.
+
+Store the four review contact fields (`contactFirstName`, `contactLastName`, `contactPhone`, `contactEmail`) in a private local `review-contact.json` under the release state directory. These fields go only to Apple for review, never into public source. The default private state directory is `~/.config/inputpin-release`.
+
+## Release a version
+
+Update `VERSION`, `CHANGELOG.md` and listing copy. Review/test the source and refresh screenshots if the UI changes. Commit the verified source before a production release. An existing editable version must match `VERSION`; another version draft is never silently renamed.
+
+```sh
+python3 scripts/store-release.py release --build-number 4
+```
+
+Use a new build number for a changed binary. This command creates or uses the exact version, synchronizes metadata, archives/exports with manual local signing, sets/read-verifies USD 0.99, initializes availability if absent, uploads the reviewed local screenshots, uploads the verified package if the build is absent, waits up to 30 minutes for Apple processing, selects that exact valid Mac build, and submits for automatic release after approval. Already submitted versions are read-only. An invalid build or an Apple validation error stops the command; it does not cancel a review, overwrite another draft, revoke credentials or bypass a missing requirement.
+
+Check status or resume an individual stage:
+
+```sh
+python3 scripts/store-release.py status
+python3 scripts/store-release.py screenshots
+python3 scripts/store-release.py submit --build-number 4
+```
+
+Other stages are `metadata`, `price`, `availability` and `upload`. `python3 scripts/build-store.py --build-number 4` prepares the package without uploading. The exporter validates app identity, version/build, signing team, sandbox, universal architectures and installer signing; the upload command checks its manifest, source fingerprint and SHA-256 before contacting Apple. Reusing an uploaded build requires a matching local app/version/build/source checkpoint, preventing submission of an old binary after a source edit. Build and screenshot processing both share the wait deadline. Screenshot reservations are checkpointed immediately and resumed by app/version/locale/hash.
+
+The reviewed English/Chinese PNGs live in the ignored `build/store-screenshots` directory on the signing Mac, named `en-US.png` and `zh-Hans.png`; `--screenshots /path/to/assets` selects another directory. Prepare these once during maintainer setup. The current assets have already been uploaded to Apple. `--store-preview` opens the real native controls in a controlled presentation canvas and does not start source switching or register login items. Refresh assets using the native screenshot tool, and convert to opaque RGB PNG if needed. Presentation windows are solely screenshot fixtures; the normal menu bar popup remains 252 points wide.
+
+## Contributor validation
+
+```sh
+swift test
+python3 scripts/test_store_release.py
+ARCH=universal bash build.sh
 bash scripts/probe-app-store.sh
 ```
 
-This produces an **ad hoc feasibility probe**, not a store submission package. It uses a separate `.SandboxProbe` identifier, compiles with `APP_STORE`, disables legacy preference-domain migration, includes the privacy manifest and privacy-policy menu item, and grants no network or temporary exception entitlements. It does not upload anything or change the current input source. `ARCH=arm64` is available for a faster local probe; the default is universal.
+The probe is ad hoc signed under a separate `.SandboxProbe` identity and cannot be submitted to the store. Its default validation only enumerates sources. A deliberate local `--integration-test` temporarily switches sources, requires enabled ABC/WeType and all InputPin instances to be quit, and restores the original source. Never run input switching in hosted CI.
 
-To explicitly run the input-source integration check, first quit InputPin and enable ABC and WeType. The check temporarily switches sources and restores the original source when it finishes:
-
-```sh
-build/store-probe/InputPin.app/Contents/MacOS/InputPin --integration-test
-```
-
-## Automation boundary
-
-| Stage | Approach | Current state |
-| --- | --- | --- |
-| Sandbox feasibility | Build script, entitlement verification, opt-in integration check | Implemented and locally tested |
-| Initial store setup | Register macOS bundle ID; create InputPin record in the existing account | Not created; Apple documents initial app creation on its website |
-| Signing and export | Xcode macOS app target using shared source/Core; `APP_STORE`, sandbox, privacy resources, Apple Distribution profile, installer signing; archive/export | Not implemented; installer certificate and provisioning still needed |
-| Screenshots and listing | Controlled native screenshots with no personal desktop; English/Chinese draft in `store/listing.json` | Listing draft prepared; store screenshots not prepared |
-| Upload | Xcode/Transporter CLI using the existing local API key; wait for a processed, valid build | Not implemented or uploaded |
-| Pricing | Query `/v1/apps/{id}/appPricePoints` for `USA`; paginate and match decimal customer price `0.99`; create the schedule with that returned price-point ID; read it back | Desired price recorded; no live price applied |
-| Metadata and review | API-managed version, listing and screenshots; verify privacy/age rating/export compliance and review contact; select the exact build; create review submission and submit | Not implemented or submitted |
-| Release | Set release type to `AFTER_APPROVAL`; observe state and verify the public store listing and actual installation | Requires Apple approval; no listing is live |
-
-After initial setup, a local release command can archive, export, upload, synchronize metadata/price, submit, and select automatic release after approval. Implement it as a resumable sequence: persist build/upload/submission IDs and artifact hashes, read remote state before writes, avoid duplicate submissions, and stop on rejected/invalid builds. An upload alone is not a successful release.
-
-Use the already authorized Mac as the signing host. Keep private keys and certificates in its local configuration/Keychain. Public GitHub CI should test/build probes without release credentials; do not run untrusted pull-request code with a signing key or on a privileged self-hosted runner. Never commit keys, account configuration, or private review-contact details.
-
-Apple review cannot be automated or guaranteed. New legally binding agreements and changed tax/bank/trader declarations require the account holder; recheck the current active status before a later paid release. API-managed pricing and submission can be automated once the store record and complete signed package exist. The probe does not claim that this complete release pipeline already exists.
-
-## Review positioning
-
-Explain the utility as maintaining a user-selected input source, with pause and secure-input behavior. It works with built-in Apple sources and does not require WeType. Do not promise control over an input method's internal Chinese/English mode. Explain that manual source changes are restored while pinned. Describe the store purchase as a convenient distribution of the open-source utility, with no locked features or subscription.
-
-App Review makes the final judgment about utility, design and policy compliance. Avoid billing the product as access to an operating-system API. The value is the complete restoration behavior and native interface.
+Public GitHub CI runs credential-free tests and builds. It never receives Apple private keys or executes untrusted pull requests on the signing host. Check active account agreements before a later paid release. Apple review is external; automatic release after approval does not guarantee acceptance or a release date.
 
 ## Official references
 

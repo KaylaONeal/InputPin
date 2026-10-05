@@ -19,7 +19,7 @@ InputPin restores your chosen keyboard input source when macOS switches away. It
 
 Choose WeType (微信输入法), ABC, or another enabled keyboard input source. A compact transparent SwiftUI/AppKit panel fits the Mac, with system controls, light/dark appearance and respect for accessibility preferences.
 
-Mac App Store feasibility, the US$0.99 draft price, and automation are tracked in [App Store readiness](docs/APP_STORE.md). No store edition is currently submitted or available.
+Mac App Store version 1.0.2 is **Waiting for Review**, priced at **US$0.99 once** in the United States and set to release automatically after approval. It is not available for purchase yet. See [store release automation](docs/APP_STORE.md).
 
 <p align="center"><img src="docs/assets/panel-light.png" width="300" alt="Light native panel preview"><img src="docs/assets/panel-dark.png" width="300" alt="Dark native panel preview"></p>
 <p align="center"><sub>Native view renders using example state and an opaque material. Actual translucency follows your desktop.</sub></p>

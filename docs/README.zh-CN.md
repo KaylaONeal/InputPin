@@ -45,3 +45,7 @@ open build/InputPin.app
 [贡献指南](../CONTRIBUTING.md) · [设计规范](../DESIGN.md) · [安全政策](../SECURITY.md) · [更新记录](../CHANGELOG.md) · [MIT 许可证](../LICENSE)
 
 项目独立开发，与 Apple、腾讯无隶属关系。不包含微信输入法本身，第三方输入法仍遵循各自许可证。
+
+## Mac App Store
+
+1.0.2（构建 4）已提交，当前等待 Apple 审核。美国区为 0.99 美元一次性购买，审核通过后自动上架；尚未开放购买。源码及 Homebrew 源码安装继续免费。签名、上传、定价、截图和提审脚本见 [商店发布说明](APP_STORE.md)，密钥保留在维护者的 Mac 上。
