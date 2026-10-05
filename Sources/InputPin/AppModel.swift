@@ -16,6 +16,7 @@ final class AppModel: ObservableObject {
     private var observers: [(NotificationCenter, NSObjectProtocol)] = []
     private var timer: Timer?
     private var pending: DispatchWorkItem?
+    private var presentationOnly = false
     var onUpdate: (() -> Void)?
     var enabled: Bool { engine.enabled }
     var targetID: String { engine.targetID }
@@ -62,6 +63,7 @@ final class AppModel: ObservableObject {
     }
 
     func start() {
+        guard !presentationOnly else { return }
         guard timer == nil else { return }
         let distributed = DistributedNotificationCenter.default()
         for name in [kTISNotifySelectedKeyboardInputSourceChanged!, kTISNotifyEnabledKeyboardInputSourcesChanged!] {
@@ -111,6 +113,7 @@ final class AppModel: ObservableObject {
     }
 
     func check() {
+        guard !presentationOnly else { return }
         engine.check(at: ProcessInfo.processInfo.systemUptime)
         refresh()
         if engine.enabled, !environment.isSecure, environment.currentID != engine.targetID,
@@ -121,6 +124,7 @@ final class AppModel: ObservableObject {
     }
 
     func refresh() {
+        guard !presentationOnly else { return }
         let sources = environment.sources
         if self.sources != sources { self.sources = sources }
         if currentID != environment.currentID { currentID = environment.currentID }
@@ -132,6 +136,12 @@ final class AppModel: ObservableObject {
     }
 
     func setEnabled(_ value: Bool) {
+        if presentationOnly {
+            engine.enabled = value
+            state = value ? .pinned : .paused
+            objectWillChange.send()
+            return
+        }
         engine.enabled = value
         defaults.set(value, forKey: "enabled")
         engine.reset()
@@ -139,6 +149,12 @@ final class AppModel: ObservableObject {
     }
 
     func setTarget(_ id: String) {
+        if presentationOnly {
+            guard sources.contains(where: { $0.id == id }) else { return }
+            engine.targetID = id; currentID = id
+            objectWillChange.send()
+            return
+        }
         guard environment.isAvailable(id) else { return }
         engine.targetID = id
         defaults.set(id, forKey: "targetID")
@@ -147,6 +163,7 @@ final class AppModel: ObservableObject {
     }
 
     func setLogin(_ value: Bool) {
+        if presentationOnly { loginStatus = value ? .enabled : .notRegistered; return }
         do {
             if value {
                 try SMAppService.mainApp.register()
@@ -159,12 +176,14 @@ final class AppModel: ObservableObject {
     /// A deterministic presentation fixture; it never starts source switching.
     static func designSnapshot() -> AppModel {
         let model = AppModel(preview: true)
+        model.presentationOnly = true
         model.engine.targetID = SystemInputEnvironment.weTypeID
         model.engine.enabled = true
         model.sources = [InputSource(id: SystemInputEnvironment.weTypeID, name: "微信输入法"),
                          InputSource(id: "com.apple.keylayout.ABC", name: "ABC")]
         model.currentID = SystemInputEnvironment.weTypeID
         model.state = .pinned
+        model.loginStatus = .notRegistered
         return model
     }
 }

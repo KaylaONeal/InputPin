@@ -15,7 +15,7 @@ enum CLI {
     static func run() throws -> Bool {
         let args = Array(CommandLine.arguments.dropFirst())
         guard let command = args.first else { return false }
-        if command == "--preview" { return false }
+        if command == "--preview" || command == "--store-preview" { return false }
         let environment = SystemInputEnvironment()
         switch command {
         case "--list":

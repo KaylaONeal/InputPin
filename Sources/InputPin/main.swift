@@ -9,6 +9,11 @@ final class InputPanel: NSPanel {
     override func cancelOperation(_ sender: Any?) { onDismiss?() }
 }
 
+final class PresentationWindow: NSWindow {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var item: NSStatusItem!
     private var panel: InputPanel!
@@ -17,13 +22,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var previewWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let preview = CommandLine.arguments.contains("--preview")
+        let storePreview = CommandLine.arguments.contains("--store-preview")
+            || Bundle.main.object(forInfoDictionaryKey: "InputPinStorePresentation") as? Bool == true
+        let preview = storePreview || CommandLine.arguments.contains("--preview")
             || Bundle.main.object(forInfoDictionaryKey: "InputPinPreviewMode") as? Bool == true
         let bundleID = Bundle.main.bundleIdentifier ?? "io.github.kaylaoneal.InputPin"
         if !preview, NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).count > 1 {
             NSApp.terminate(nil); return
         }
         model = preview ? AppModel.designSnapshot() : AppModel()
+        if storePreview {
+            // A presentation fixture uses the real controls without changing input sources or preferences.
+            NSApp.setActivationPolicy(.regular)
+            let window = PresentationWindow(contentRect: NSRect(x: 0, y: 0, width: 1280, height: 800),
+                                  styleMask: [.borderless], backing: .buffered, defer: false)
+            window.title = "InputPin Store Preview"
+            window.isOpaque = true
+            window.backgroundColor = .windowBackgroundColor
+            window.appearance = NSAppearance(named: .aqua)
+            window.contentView = NSHostingView(rootView: StorePresentation(model: model))
+            window.center()
+            window.makeKeyAndOrderFront(nil)
+            previewWindow = window
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
         if preview {
             NSApp.setActivationPolicy(.regular)
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 440, height: 380),
