@@ -46,3 +46,7 @@ The maintained custom tap is `KaylaONeal/homebrew-tap`. The cask points to a fix
 Generate the cask from verified local assets with `python3 scripts/update-homebrew.py /path/to/homebrew-tap`. This re-runs full asset verification before changing the local tap checkout.
 
 Validate the cask with Homebrew's style/audit checks, then install from the actual public release. Do not claim acceptance into Homebrew's official catalog; custom tap installation is supported separately.
+
+## Mac App Store
+
+The store edition uses a separate Xcode archive/export path, Apple Distribution app signing, Mac Installer Distribution signing and the App Sandbox. It does not use Developer ID notarization. See [store release automation](APP_STORE.md) for private local setup, one-command releases, checkpoints and exact-version verification. Public CI never gets signing credentials.

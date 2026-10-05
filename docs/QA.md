@@ -32,3 +32,11 @@ This record separates executed checks from design intent. It is updated before p
 - Native popover interaction, keyboard navigation, VoiceOver, real reduced-transparency/reduced-motion settings, login startup, sleep/wake, and Intel hardware runtime.
 
 The native UI automation connection did not locate the preview window. The initial signing process awaited local system handling that the automation tool could not inspect; Developer ID signing subsequently completed. These observations are not treated as successful UI or signing tests. Secure input during that time correctly blocked the opt-in integration test; the test later passed after secure input ended.
+
+## Mac App Store candidate — October 5, 2026
+
+- Xcode release archive/export: PASS, version 1.0.2 build 4, original bundle ID, matching signing team, arm64/x86_64, distribution sandbox entitlement, signed Mac Installer package. Apple processing: VALID.
+- English/Chinese native presentation screenshots captured and visually reviewed at 2560 × 1600; sharp text, transparent source control, compact actual panel, no personal desktop. These use deterministic sample input sources and do not establish live restoration behavior.
+- Ten Swift core tests, seven release safety tests, four artifact-verifier tests and universal development/probe builds pass. Release tests reject changed package hashes, another version's draft, manual release submission, cross-host credential redirects and cyclic pagination.
+- Live metadata/price/screenshot API writes and readback passed; both screenshots completed. Privacy disclosure was published after explicit account-holder confirmation. Review submission returned WAITING_FOR_REVIEW with AFTER_APPROVAL.
+- App Review approval, public store availability and actual paid installation are pending.

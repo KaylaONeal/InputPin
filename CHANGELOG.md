@@ -2,12 +2,17 @@
 
 All notable changes are recorded here. Versions follow [Semantic Versioning](https://semver.org/).
 
-## 1.0.2 — Unreleased
+## 1.0.2 — 2026-10-05
 
 ### Added
 
-- Reproducible sandbox feasibility probe and CI validation, draft US$0.99 store metadata, privacy manifest/policy, and an evidence-backed App Store automation plan.
+- Mac App Store Xcode archive/export, local signing setup, verified installer upload, bilingual native screenshots, live US$0.99 pricing, and resumable review submission. Version 1.0.2 build 4 is waiting for Apple review with automatic release after approval.
+- Reproducible sandbox feasibility probe and CI validation, privacy manifest and policy.
 - Store-specific compilation skips legacy preference-domain migration and provides an in-app privacy-policy link. The probe is ad hoc signed and cannot be submitted as a store package.
+
+### Fixed
+
+- Presentation fixtures cannot switch the system input source, write pinning preferences or register login items.
 
 ## 1.0.1 — 2026-10-05
 
