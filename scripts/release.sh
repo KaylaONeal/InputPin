@@ -4,6 +4,14 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 version="$(cat VERSION)"
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid VERSION' >&2; exit 2; }
+mkdir -p dist
+app="$PWD/build/InputPin.app"
+zip="$PWD/dist/InputPin-$version-universal.zip"
+dmg="$PWD/dist/InputPin-$version-universal.dmg"
+if [ -e "$zip" ] || [ -e "$dmg" ]; then
+  echo 'Release output exists. Use a clean working copy; never overwrite a published asset.' >&2
+  exit 2
+fi
 : "${SIGNING_IDENTITY:?Set your local Developer ID Application identity}"
 auth=()
 if [ -n "${NOTARY_PROFILE:-}" ]; then
@@ -15,15 +23,7 @@ else
   auth=(--key "$NOTARY_KEY_PATH" --key-id "$NOTARY_KEY_ID" --issuer "$NOTARY_ISSUER")
 fi
 swift test
-ARCH=universal bash build.sh
-mkdir -p dist
-app="$PWD/build/InputPin.app"
-zip="$PWD/dist/InputPin-$version-universal.zip"
-dmg="$PWD/dist/InputPin-$version-universal.dmg"
-if [ -e "$zip" ] || [ -e "$dmg" ]; then
-  echo 'Release output exists. Use a clean working copy; never overwrite a published asset.' >&2
-  exit 2
-fi
+BUILD_DIR="$PWD/build" ARCH=universal bash build.sh
 ditto -c -k --keepParent "$app" "$zip"
 xcrun notarytool submit "$zip" "${auth[@]}" --wait --timeout 15m
 xcrun stapler staple "$app"

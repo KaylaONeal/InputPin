@@ -22,7 +22,7 @@ for line in (root / 'SHA256SUMS').read_text().splitlines():
 if set(sums) != expected:
     raise SystemExit('Missing release checksums')
 for name, checksum in sums.items():
-    actual = hashlib.file_digest((root / name).open('rb'), 'sha256').hexdigest() if sys.version_info >= (3, 11) else hashlib.sha256((root / name).read_bytes()).hexdigest()
+    actual = hashlib.sha256((root / name).read_bytes()).hexdigest()
     if actual != checksum:
         raise SystemExit(f'Checksum mismatch: {name}')
 

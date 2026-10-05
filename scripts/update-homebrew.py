@@ -3,12 +3,14 @@
 import hashlib
 import re
 import sys
+import subprocess
 from pathlib import Path
 
 project = Path(__file__).resolve().parent.parent
 version = (project / 'VERSION').read_text().strip()
 if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version):
     raise SystemExit('Invalid VERSION')
+subprocess.run([sys.executable, str(project / 'scripts/verify-assets.py'), str(project / 'dist'), version], check=True)
 dmg = project / 'dist' / f'InputPin-{version}-universal.dmg'
 checksum = hashlib.sha256(dmg.read_bytes()).hexdigest()
 tap = Path(sys.argv[1]).resolve()

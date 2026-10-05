@@ -39,4 +39,6 @@ The CI workflow builds development candidates with ad hoc signatures. They are e
 
 The maintained custom tap is `KaylaONeal/homebrew-tap`. The cask points to a fixed GitHub Release URL, includes the DMG SHA-256, requires macOS Ventura or later, installs the app and optional `inputpin` CLI, and preserves preferences on ordinary uninstall.
 
+Generate the cask from verified local assets with `python3 scripts/update-homebrew.py /path/to/homebrew-tap`. This re-runs full asset verification before changing the local tap checkout.
+
 Validate the cask with Homebrew's style/audit checks, then install from the actual public release. Do not claim acceptance into Homebrew's official catalog; custom tap installation is supported separately.

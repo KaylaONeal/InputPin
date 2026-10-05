@@ -14,6 +14,7 @@ Requirements: macOS 13+, Xcode Command Line Tools with Swift 5.9+.
 git clone https://github.com/KaylaONeal/InputPin.git
 cd InputPin
 swift test
+python3 scripts/test_verify_assets.py
 bash build.sh
 open build/InputPin.app
 ```
