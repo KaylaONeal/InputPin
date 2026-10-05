@@ -26,7 +26,12 @@ final class AppModel: ObservableObject {
         let environment = SystemInputEnvironment()
         self.environment = environment
         defaults = preview ? UserDefaults(suiteName: "io.github.kaylaoneal.InputPin.preview")! : .standard
+        #if APP_STORE
+        // Store preferences stay in this app's sandbox; no prototype-domain migration.
+        let old: [String: Any]? = nil
+        #else
         let old = preview ? nil : UserDefaults.standard.persistentDomain(forName: "local.inputpin")
+        #endif
         let target = defaults.string(forKey: "targetID") ?? old?["targetID"] as? String
             ?? (environment.isAvailable(SystemInputEnvironment.weTypeID) ? SystemInputEnvironment.weTypeID : environment.currentID)
         let enabled = defaults.object(forKey: "enabled") as? Bool ?? old?["enabled"] as? Bool ?? true

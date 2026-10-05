@@ -2,6 +2,13 @@
 
 All notable changes are recorded here. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 1.0.2 — Unreleased
+
+### Added
+
+- Reproducible sandbox feasibility probe and CI validation, draft US$0.99 store metadata, privacy manifest/policy, and an evidence-backed App Store automation plan.
+- Store-specific compilation skips legacy preference-domain migration and provides an in-app privacy-policy link. The probe is ad hoc signed and cannot be submitted as a store package.
+
 ## 1.0.1 — 2026-10-05
 
 ### Changed

@@ -1,0 +1,32 @@
+{
+  "status": "draft-not-submitted",
+  "platform": "MAC_OS",
+  "bundleId": "io.github.kaylaoneal.InputPin",
+  "category": "UTILITIES",
+  "minimumMacOS": "13.0",
+  "pricing": {
+    "model": "paid-upfront",
+    "baseTerritory": "USA",
+    "currency": "USD",
+    "customerPrice": "0.99",
+    "otherTerritories": "Apple automatic equalization",
+    "pricePointId": null
+  },
+  "releaseType": "AFTER_APPROVAL",
+  "dataCollection": "none",
+  "localizations": {
+    "en-US": {
+      "name": "InputPin",
+      "subtitle": "Keep your input source pinned",
+      "keywords": "keyboard,input,language,typing,menu bar,utility,pin",
+      "description": "Keep your chosen macOS input source in place. Choose an enabled keyboard input source from a small native menu bar panel, and InputPin restores it when macOS switches away. Pause at any time to switch freely. Secure input takes priority, and launch at login is optional.\n\nWorks with built-in input sources and installed input methods. InputPin does not install an input method or change its internal Chinese/English mode. While pinning is enabled, intentional input-source changes are also restored.\n\nNo accounts, analytics, keystroke collection, subscription, or Accessibility permission. MIT-licensed source is available on GitHub; the App Store edition is a paid convenience distribution."
+    },
+    "zh-Hans": {
+      "name": "InputPin",
+      "subtitle": "固定输入法，安心打字",
+      "keywords": "输入法,固定,键盘,打字,语言,菜单栏,工具",
+      "description": "固定你选择的 macOS 输入法。当系统切换到其他输入法时，InputPin 自动恢复你的选择。原生菜单栏弹窗，随时暂停，安全输入优先，开机启动由你决定。\n\n支持系统自带的输入源和已安装的输入法。InputPin 不安装输入法，也不控制输入法内部的中英文模式。启用固定时，手动切换到其他输入法也会被恢复。\n\n无需账户、订阅或辅助功能权限，不采集按键，不做统计追踪。源码在 GitHub 以 MIT 许可证公开；App Store 版为付费的便捷安装渠道。"
+    }
+  },
+  "reviewNotes": "InputPin is a menu bar utility using public Carbon Text Input Source APIs. No login or third-party input method is required: reviewers can test using two enabled Apple keyboard input sources. Select one in InputPin, switch to the other via the macOS input menu, and observe restoration. Turn off Keep this input source to allow switching freely. Secure input pauses restoration. The app has no global keyboard event monitor; an open panel has a temporary mouse-only dismissal monitor. Test launch-at-login only with explicit opt-in."
+}

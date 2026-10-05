@@ -55,6 +55,11 @@ struct PinPanel: View {
                         NSApp.activate(ignoringOtherApps: true)
                     }
                     Button("GitHub") { NSWorkspace.shared.open(URL(string: "https://github.com/KaylaONeal/InputPin")!) }
+                    #if APP_STORE
+                    Button(Copy.text("Privacy policy", "隐私政策")) {
+                        NSWorkspace.shared.open(URL(string: "https://kaylaoneal.github.io/InputPin/privacy.html")!)
+                    }
+                    #endif
                     Divider()
                     Button(Copy.quit) { NSApp.terminate(nil) }.keyboardShortcut("q")
                 } label: { Image(systemName: "ellipsis").font(.system(size: 13, weight: .medium)).frame(width: 24, height: 24) }
