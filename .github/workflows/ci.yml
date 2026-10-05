@@ -16,6 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - run: swift test --enable-code-coverage
+      - run: python3 scripts/test_verify_assets.py
       - name: Validate shell scripts
         run: bash -n build.sh scripts/release.sh scripts/verify-release.sh
       - name: Build universal development candidate
@@ -24,7 +25,8 @@ jobs:
         run: bash build.sh
       - name: Verify architectures and bundle
         run: |
-          lipo -verify_arch arm64 x86_64 build/InputPin.app/Contents/MacOS/InputPin
+          archs="$(lipo -archs build/InputPin.app/Contents/MacOS/InputPin)"
+          [[ "$archs" == "x86_64 arm64" || "$archs" == "arm64 x86_64" ]]
           codesign --verify --strict build/InputPin.app
           plutil -lint build/InputPin.app/Contents/Info.plist
           build/InputPin.app/Contents/MacOS/InputPin --version

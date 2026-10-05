@@ -36,7 +36,9 @@ def verify_app(app):
         raise SystemExit('Release app identity/version mismatch')
     if info.get('LSMinimumSystemVersion') != '13.0':
         raise SystemExit('Unexpected deployment requirement')
-    run('lipo', '-verify_arch', 'arm64', 'x86_64', str(app / 'Contents/MacOS/InputPin'))
+    architectures = subprocess.check_output(['lipo', '-archs', str(app / 'Contents/MacOS/InputPin')], text=True).split()
+    if set(architectures) != {'arm64', 'x86_64'}:
+        raise SystemExit('Expected exactly arm64 and x86_64 architectures')
     run('codesign', '--verify', '--strict', str(app))
     signature = subprocess.run(['codesign', '-dv', '--verbose=2', str(app)], capture_output=True, text=True, check=True).stderr
     if 'Authority=Developer ID Application:' not in signature or 'flags=0x10000(runtime)' not in signature:
