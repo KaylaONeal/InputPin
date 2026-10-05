@@ -2,6 +2,14 @@
 
 All notable changes are recorded here. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 1.0.1 — 2026-10-05
+
+### Changed
+
+- Compact 252-point panel with tighter spacing, single-line settings and a transparent input-source menu.
+- A transparent native panel replaces the opaque system popover backing. Text and controls retain full opacity; reduced transparency and increased contrast use an opaque background.
+- Clicking elsewhere or pressing Escape dismisses the panel. Reopening the app reveals it.
+
 ## 1.0.0 — 2026-10-05
 
 ### Added

@@ -12,7 +12,7 @@ Include the affected version, macOS version, reproduction steps, impact, and a m
 
 ## Scope and permissions
 
-InputPin reads the selected input-source identifier, observes macOS input-source and workspace notifications, and selects the user's target input source. It does not capture keys, inspect documents, read passwords, or make network requests. No Accessibility, Input Monitoring, admin, or account access is required.
+InputPin reads the selected input-source identifier, observes macOS input-source and workspace notifications, and selects the user's target input source. It does not capture keys, inspect documents, read passwords, or make network requests. No Accessibility, Input Monitoring, admin, or account access is required. A temporary mouse-click monitor dismisses the menu panel when clicking another app; it is removed on dismissal and does not observe global keyboard events or retain mouse-event data.
 
 Secure Event Input takes priority. On secure input, inactive sessions, or sleep, automatic switching is suspended. macOS login screens are outside the app's scope. Certain applications keep secure input enabled longer than a password field; InputPin waits until the system releases it.
 

@@ -45,7 +45,7 @@ enum CLI {
         let model = AppModel.designSnapshot()
         let view = NSHostingView(rootView: PinPanel(model: model, renderWithOpaqueMaterial: true))
         view.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 360, height: 500),
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: PinPanel.width, height: 300),
                               styleMask: .borderless, backing: .buffered, defer: false)
         window.contentView = view
         view.frame = NSRect(origin: .zero, size: view.fittingSize)
