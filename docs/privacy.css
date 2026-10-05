@@ -1,0 +1,6 @@
+.policy{max-width:760px;padding:48px 0 64px}
+.policy h1{font-size:clamp(36px,5vw,56px);letter-spacing:-1.5px;line-height:1.15;margin-bottom:20px}
+.policy h2{font-size:22px;font-weight:600;letter-spacing:-.4px;line-height:1.35;margin:32px 0 12px}
+.policy p{font-size:16px;line-height:1.75;color:var(--muted);margin:0 0 18px}
+.policy a{text-decoration:underline;text-underline-offset:3px;color:var(--accent)}
+.policy hr{border:0;border-top:1px solid var(--line);margin:40px 0}
