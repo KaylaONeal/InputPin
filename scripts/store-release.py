@@ -327,7 +327,7 @@ def main():
     p.add_argument('action', choices=['metadata', 'price', 'availability', 'screenshots', 'upload', 'submit', 'status', 'release'])
     p.add_argument('--credentials', type=Path)
     p.add_argument('--contact', type=Path, default=PRIVATE/'review-contact.json')
-    p.add_argument('--screenshots', type=Path, default=ROOT/'store/screenshots')
+    p.add_argument('--screenshots', type=Path, default=ROOT/'build/store-screenshots')
     p.add_argument('--package', type=Path, default=ROOT/'build/store-export/InputPin.pkg')
     p.add_argument('--build-number', default='1')
     p.add_argument('--wait-seconds', type=int, default=1800)

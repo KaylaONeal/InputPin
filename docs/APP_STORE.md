@@ -35,7 +35,7 @@ Update `VERSION`, `CHANGELOG.md` and listing copy. Review/test the source and re
 python3 scripts/store-release.py release --build-number 4
 ```
 
-Use a new build number for a changed binary. This command creates or uses the exact version, synchronizes metadata, archives/exports with manual local signing, sets/read-verifies USD 0.99, initializes availability if absent, uploads the bundled screenshots, uploads the verified package if the build is absent, waits up to 30 minutes for Apple processing, selects that exact valid Mac build, and submits for automatic release after approval. Already submitted versions are read-only. An invalid build or an Apple validation error stops the command; it does not cancel a review, overwrite another draft, revoke credentials or bypass a missing requirement.
+Use a new build number for a changed binary. This command creates or uses the exact version, synchronizes metadata, archives/exports with manual local signing, sets/read-verifies USD 0.99, initializes availability if absent, uploads the reviewed local screenshots, uploads the verified package if the build is absent, waits up to 30 minutes for Apple processing, selects that exact valid Mac build, and submits for automatic release after approval. Already submitted versions are read-only. An invalid build or an Apple validation error stops the command; it does not cancel a review, overwrite another draft, revoke credentials or bypass a missing requirement.
 
 Check status or resume an individual stage:
 
@@ -47,7 +47,7 @@ python3 scripts/store-release.py submit --build-number 4
 
 Other stages are `metadata`, `price`, `availability` and `upload`. `python3 scripts/build-store.py --build-number 4` prepares the package without uploading. The exporter validates app identity, version/build, signing team, sandbox, universal architectures and installer signing; the upload command checks its manifest, source fingerprint and SHA-256 before contacting Apple. Reusing an uploaded build requires a matching local app/version/build/source checkpoint, preventing submission of an old binary after a source edit. Build and screenshot processing both share the wait deadline. Screenshot reservations are checkpointed immediately and resumed by app/version/locale/hash.
 
-`store/screenshots` holds the reviewed English/Chinese assets. `--store-preview` opens the real native controls in a controlled presentation canvas and does not start source switching or register login items. Refresh assets using the native screenshot tool, and convert to opaque RGB PNG if needed. Presentation windows are solely screenshot fixtures; the normal menu bar popup remains 252 points wide.
+The reviewed English/Chinese PNGs live in the ignored `build/store-screenshots` directory on the signing Mac, named `en-US.png` and `zh-Hans.png`; `--screenshots /path/to/assets` selects another directory. Prepare these once during maintainer setup. The current assets have already been uploaded to Apple. `--store-preview` opens the real native controls in a controlled presentation canvas and does not start source switching or register login items. Refresh assets using the native screenshot tool, and convert to opaque RGB PNG if needed. Presentation windows are solely screenshot fixtures; the normal menu bar popup remains 252 points wide.
 
 ## Contributor validation
 

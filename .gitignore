@@ -20,3 +20,4 @@ account.json
 __pycache__/
 .DS_Store
 InputPin.xcodeproj/
+store/screenshots/*.png
