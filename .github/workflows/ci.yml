@@ -18,7 +18,7 @@ jobs:
       - run: swift test --enable-code-coverage
       - run: python3 scripts/test_verify_assets.py
       - name: Validate shell scripts
-        run: bash -n build.sh scripts/release.sh scripts/verify-release.sh
+        run: bash -n build.sh scripts/release.sh scripts/verify-release.sh scripts/probe-app-store.sh
       - name: Build universal development candidate
         env:
           ARCH: universal
@@ -30,6 +30,8 @@ jobs:
           codesign --verify --strict build/InputPin.app
           plutil -lint build/InputPin.app/Contents/Info.plist
           build/InputPin.app/Contents/MacOS/InputPin --version
+      - name: Build and validate sandbox feasibility probe (no input switching)
+        run: bash scripts/probe-app-store.sh
       - name: Archive development candidate (not a public release)
         run: ditto -c -k --keepParent build/InputPin.app build/InputPin-development.zip
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

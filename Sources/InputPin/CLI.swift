@@ -62,8 +62,14 @@ enum CLI {
         print("Native view render: \(path) (presentation fixture, not a live screenshot)")
     }
     private static func integrationTest(_ environment: SystemInputEnvironment) throws {
-        try require(NSRunningApplication.runningApplications(withBundleIdentifier: "io.github.kaylaoneal.InputPin").isEmpty,
-                    "Quit InputPin before running the integration test")
+        let appIDs: Set<String> = ["io.github.kaylaoneal.InputPin",
+                                   "io.github.kaylaoneal.InputPin.SandboxProbe",
+                                   Bundle.main.bundleIdentifier ?? "io.github.kaylaoneal.InputPin"]
+        try require(appIDs.allSatisfy { id in
+            NSRunningApplication.runningApplications(withBundleIdentifier: id)
+                .allSatisfy { $0.processIdentifier == ProcessInfo.processInfo.processIdentifier }
+        },
+                    "Quit InputPin and its sandbox probe before running the integration test")
         let abc = "com.apple.keylayout.ABC"
         let weType = SystemInputEnvironment.weTypeID
         try require(!environment.isSecure && environment.isAvailable(abc) && environment.isAvailable(weType),
