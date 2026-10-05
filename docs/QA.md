@@ -21,7 +21,8 @@ This record separates executed checks from design intent. It is updated before p
 - Width reduced from 360 to 252 points, padding from 24 to 12 points. Example-state height is 212 points; panel area is about 69% smaller.
 - Light/dark native view renders inspected; the source menu has no white backing. These exports remain opaque presentation fixtures for layout review, not live transparency screenshots.
 - A live native panel was observed through Mac accessibility and its controlled-backdrop preview captured: the background shows through, and text/toggles retain full opacity. The preview contains example state, not a production source-restoration test.
-- Own-sheet focus is protected from the normal resign-key dismissal path. Live error-sheet, Escape and dropdown-selection interaction still require acceptance checks.
+- The real borderless input-source menu expands without dismissing the panel. Escape first closes that menu, then closes the panel. No source or login setting was changed in these checks.
+- Own-sheet focus is protected from the normal resign-key dismissal path; live error-sheet and dropdown-selection interaction still require acceptance checks.
 
 ## Remaining acceptance checks
 
