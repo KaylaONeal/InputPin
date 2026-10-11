@@ -49,10 +49,11 @@ cat > "$app/Contents/Info.plist" <<PLIST
 <key>NSHumanReadableCopyright</key><string>Copyright © 2026 InputPin contributors. MIT License.</string>
 <key>CFBundleDevelopmentRegion</key><string>en</string>
 <key>CFBundleLocalizations</key><array><string>en</string><string>zh-Hans</string></array>
+<key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
 </dict></plist>
 PLIST
+cp store/PrivacyInfo.xcprivacy "$app/Contents/Resources/PrivacyInfo.xcprivacy"
 if [ "${INPUTPIN_STORE_PROBE:-0}" = 1 ]; then
-  cp store/PrivacyInfo.xcprivacy "$app/Contents/Resources/PrivacyInfo.xcprivacy"
   codesign --force --options runtime --entitlements store/InputPin.entitlements --sign - "$app"
 elif [ -n "${SIGNING_IDENTITY:-}" ]; then
   codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" "$app"

@@ -89,7 +89,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     private func updateIcon() {
-        item?.button?.image = NSImage(systemSymbolName: model.enabled ? "pin.fill" : "pin.slash", accessibilityDescription: model.title)
+        let symbol: String
+        switch model.state {
+        case .pinned: symbol = "pin.fill"
+        case .paused: symbol = "pin.slash"
+        default: symbol = "hourglass"
+        }
+        let image = NSImage(systemSymbolName: symbol, accessibilityDescription: model.title)
+        image?.isTemplate = true
+        item?.button?.image = image
+        item?.button?.setAccessibilityLabel("InputPin · \(model.title)")
+        item?.button?.setAccessibilityValue(model.targetName)
         item?.button?.toolTip = "InputPin · \(model.title) · \(model.targetName)"
     }
 
