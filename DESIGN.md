@@ -29,7 +29,7 @@ The panel closes on outside mouse clicks, loss of key focus or Escape. A tempora
 
 Pinning is on by default and can be paused with one toggle. Manual input-source switching is also restored while pinned; the README states this explicitly. Login startup is opt-in. Missing targets, secure input and rejected switches explain the next action.
 
-The first chosen target is saved before monitoring starts. A disabled or removed source keeps its last known name, so people can identify what needs attention. Routine fallback checks do not redraw unchanged controls or reload the login service; pausing, sleep and inactive sessions suspend fallback polling. Source availability is refreshed on enabled-source notifications and when the panel opens, and revalidated before selection.
+The first chosen target is saved before monitoring starts. A disabled or removed source keeps its last known name, so people can identify what needs attention. Routine fallback checks do not redraw unchanged controls or reload the login service; pausing, sleep and inactive sessions suspend fallback polling. Source availability is refreshed on enabled-source notifications and when the panel opens, and revalidated before selection. Sources are refreshed after observer registration; unavailable targets are rechecked every five seconds so missed system notifications cannot prevent recovery.
 
 ## Review gates
 

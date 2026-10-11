@@ -11,11 +11,19 @@ private final class TestInputEnvironment: InputSourceProviding {
     var sourceReads = 0
     var selections: [String] = []
     var availableSources = [InputSource(id: "abc", name: "ABC")]
+    var cacheSources = false
+    private var cachedSources: [InputSource]?
     var currentID: String { currentReads += 1; return selectedID }
     var isSecure = false
-    var sources: [InputSource] { sourceReads += 1; return availableSources }
-    func invalidateSources() {}
-    func isAvailable(_ id: String) -> Bool { availableSources.contains { $0.id == id } }
+    private var selectable: [InputSource] {
+        if !cacheSources { return availableSources }
+        if let cachedSources { return cachedSources }
+        cachedSources = availableSources
+        return availableSources
+    }
+    var sources: [InputSource] { sourceReads += 1; return selectable }
+    func invalidateSources() { cachedSources = nil }
+    func isAvailable(_ id: String) -> Bool { selectable.contains { $0.id == id } }
     func select(_ id: String) -> Int32 {
         selections.append(id)
         selectedID = id
@@ -74,6 +82,44 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(model.state, .unavailable)
         XCTAssertEqual(model.targetName, "ABC")
         XCTAssertTrue(environment.selections.isEmpty)
+    }
+
+    func testSourceEnabledBeforeObserverRegistrationRecoversAtStart() {
+        preferences.set("other", forKey: "targetID")
+        let environment = TestInputEnvironment()
+        environment.cacheSources = true
+        let model = AppModel(environment: environment, defaults: preferences, loginItem: TestLoginItem(),
+                             workspaceNotifications: notifications, inputNotifications: notifications)
+        environment.availableSources.append(InputSource(id: "other", name: "Other"))
+        model.start()
+        defer { model.stop() }
+        XCTAssertEqual(model.state, .pinned)
+        XCTAssertEqual(environment.selections, ["other"])
+    }
+
+    func testMissingSourceRecoversWithoutNotificationWithThrottledRefresh() {
+        preferences.set("other", forKey: "targetID")
+        let environment = TestInputEnvironment()
+        environment.cacheSources = true
+        var now: TimeInterval = 10
+        let model = AppModel(environment: environment, defaults: preferences, loginItem: TestLoginItem(),
+                             workspaceNotifications: notifications, inputNotifications: notifications,
+                             uptime: { now })
+        model.check()
+        model.check()
+        XCTAssertEqual(model.state, .unavailable)
+        let reads = environment.sourceReads
+        environment.availableSources.append(InputSource(id: "other", name: "Other"))
+        now = 11
+        model.check()
+        XCTAssertEqual(model.state, .unavailable)
+        XCTAssertEqual(environment.sourceReads, reads)
+        now = 15
+        model.check()
+        XCTAssertEqual(model.state, .pinned)
+        XCTAssertEqual(model.targetName, "Other")
+        XCTAssertEqual(environment.selections, ["other"])
+        XCTAssertEqual(environment.sourceReads, reads + 1)
     }
 
     func testChangingTargetWhilePausedWaitsForResume() {

@@ -9,6 +9,7 @@ All notable changes are recorded here. Versions follow [Semantic Versioning](htt
 - Open the input-source choices in one click, without an extra “Choose an input source” submenu.
 - Clear obsolete failed-switch delays after an observed recovery, target change or pause/resume. Preserve failed-switch status throughout the retry delay.
 - Save the initial input-source choice and retain the last known name when the source becomes unavailable.
+- Recover automatically when a missing input source is re-enabled, even if its system notification is missed.
 - Suspend fallback polling while paused, asleep or outside the active session; avoid redrawing unchanged UI or repeatedly enumerating sources and login items.
 
 ### Changed

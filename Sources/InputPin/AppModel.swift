@@ -17,6 +17,7 @@ final class AppModel: ObservableObject {
     private let loginItem: LoginItemManaging
     private let workspaceNotifications: NotificationCenter
     private let inputNotifications: NotificationCenter
+    private let uptime: () -> TimeInterval
     private let defaults: UserDefaults
     private let persistPreferences: Bool
     private var lastTargetName: String
@@ -24,6 +25,7 @@ final class AppModel: ObservableObject {
     private var timer: Timer?
     private var pending: DispatchWorkItem?
     private var started = false
+    private var nextSourceRefresh: TimeInterval = 0
     private var presentationOnly = false
     var onUpdate: (() -> Void)?
     var targetName: String {
@@ -35,11 +37,13 @@ final class AppModel: ObservableObject {
     init(preview: Bool = false, environment: InputSourceProviding = SystemInputEnvironment(),
          defaults: UserDefaults? = nil, loginItem: LoginItemManaging = SystemLoginItem(),
          workspaceNotifications: NotificationCenter = NSWorkspace.shared.notificationCenter,
-         inputNotifications: NotificationCenter = DistributedNotificationCenter.default()) {
+         inputNotifications: NotificationCenter = DistributedNotificationCenter.default(),
+         uptime: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
         self.environment = environment
         self.loginItem = loginItem
         self.workspaceNotifications = workspaceNotifications
         self.inputNotifications = inputNotifications
+        self.uptime = uptime
         self.persistPreferences = !preview
         let preferences = defaults ?? (preview
             ? UserDefaults(suiteName: "io.github.kaylaoneal.InputPin.preview." + UUID().uuidString)!
@@ -126,6 +130,8 @@ final class AppModel: ObservableObject {
                 self.schedule()
             }
         }
+        // Close the gap between initial enumeration and observer registration.
+        refresh(reloadSources: true, refreshLogin: false)
         check()
     }
 
@@ -177,12 +183,20 @@ final class AppModel: ObservableObject {
         guard !presentationOnly else { return }
         pending?.cancel()
         pending = nil
-        engine.check(at: ProcessInfo.processInfo.systemUptime)
+        let now = uptime()
+        if engine.enabled, engine.sessionActive, !engine.sleeping, !environment.isSecure,
+           engine.state == .unavailable, now >= nextSourceRefresh {
+            // Distributed notifications may be dropped. Revalidate missing sources
+            // without re-enumerating on every healthy fallback check.
+            refresh(reloadSources: true, refreshLogin: false)
+            nextSourceRefresh = now + 5
+        }
+        engine.check(at: now)
         refresh(reloadSources: false, refreshLogin: false)
         updateFallbackTimer()
         switch engine.state {
         case .retrying, .waitingToRestore:
-            let remaining = engine.nextAttempt - ProcessInfo.processInfo.systemUptime
+            let remaining = engine.nextAttempt - uptime()
             if remaining > 0 { schedule(after: remaining) }
         default: break
         }
