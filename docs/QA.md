@@ -2,6 +2,28 @@
 
 This record separates executed checks from design intent. It is updated before public release.
 
+## Local quality candidate — 1.0.3, October 11, 2026
+
+This candidate is built locally and is not published or submitted to Apple. Checks ran on Apple Silicon, macOS 27.0, Xcode 27.0 and Swift 6.4.
+
+- **23 Swift tests pass:** 13 core tests and 10 application-model tests. New regression cases reproduce obsolete failure delays after external recovery, target change and pause/resume. Model tests cover initial-choice persistence, unavailable-source names, unchanged refreshes, paused polling, pending login approval, registration errors, preference isolation and stopping pending restoration. Workspace sleep/wake notifications are simulated in a test; they do not establish physical sleep/wake behavior.
+- **19 Python safety tests pass:** 15 store-release tests and four artifact-verifier tests. New cases cover ordered three-image upload, exact-set completion, reservation resume, unknown remote assets, invalid image preflight and localized update-note validation. Shell syntax and `git diff --check` pass.
+- **Universal direct and sandbox-probe builds pass:** arm64 and x86_64, strict ad hoc signature verification, version 1.0.3, utility category, privacy manifests in both bundles and macOS 13.0 minimum in Mach-O deployment metadata. SHA-256 values are recorded privately under `build/quality/artifacts.json`. This does not establish Intel runtime compatibility, Developer ID signing, notarization or release approval.
+- **Final direct-build integration test passes:** three ABC → WeType restorations at 141/512/491 ms, pause/resume, secure-input suspension/recovery and unavailable-target detection.
+- **Final sandbox-probe integration test passes:** three restorations at 134/501/501 ms and the same pause/resume, secure-input and unavailable-target cases. Existing instances were stopped to avoid interference, then their original app paths were relaunched and the original input source was read back after restoration.
+- **44 native presentation renders generated:** English/Simplified Chinese, light/dark, 11 fixtures covering active, paused, secure, unavailable, retry, unconfirmed switch, restoration, session, login approval, long names and high-contrast appearance. Representative renders were inspected for each fixture category. The source menu uses native truncation with a complete accessibility value and tooltip; status and footer text wrap. Public light/dark preview assets were refreshed. These opaque fixture renders do not prove live translucency, actual system accessibility settings or successful screen-reader interaction.
+- **Read-only App Store Connect refresh:** the previously submitted 1.0.2 version returned `READY_FOR_SALE` and `AFTER_APPROVAL`. This applies to 1.0.2, not this candidate; no paid installation was performed.
+
+Initial native-tool attempts could not locate the preview window or timed out. A subsequent real installed-app session succeeded: one click on the selected input-method name immediately exposed ABC and WeType as menu items, without an intermediate submenu. Escape closed that menu and left the panel open. Neither source selection nor login settings were changed during this interaction check. The accessibility snapshot and screenshot confirmed pinned state and enabled native switches. Keyboard-only interaction, VoiceOver, live error-sheet handling, actual Reduce Transparency/Reduce Motion settings, physical sleep/wake and launch at login remain acceptance gates. Developer ID signing/notarization/stapling and public artifact installation also remain separate release gates.
+
+To regenerate the offline fixture gallery after building:
+
+```sh
+python3 scripts/render-panels.py
+```
+
+The gallery is written to `build/quality/panels/index.html`. It never starts the pinning engine or registers login items.
+
 ## Executed on the maintainer's Mac
 
 - MacBook Air, Apple Silicon, macOS 27.0, Swift 6.4.
@@ -29,7 +51,7 @@ This record separates executed checks from design intent. It is updated before p
 - Actual Apple notarization, stapling and Gatekeeper assessment.
 - Exact public ZIP and DMG contents and checksums.
 - Binary cask installation from the published notarized release.
-- Native popover interaction, keyboard navigation, VoiceOver, real reduced-transparency/reduced-motion settings, login startup, sleep/wake, and Intel hardware runtime.
+- Keyboard navigation, VoiceOver, real reduced-transparency/reduced-motion settings, login startup, sleep/wake, and Intel hardware runtime.
 
 The native UI automation connection did not locate the preview window. The initial signing process awaited local system handling that the automation tool could not inspect; Developer ID signing subsequently completed. These observations are not treated as successful UI or signing tests. Secure input during that time correctly blocked the opt-in integration test; the test later passed after secure input ended.
 
