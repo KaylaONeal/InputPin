@@ -2,7 +2,7 @@
 
 All notable changes are recorded here. Versions follow [Semantic Versioning](https://semver.org/).
 
-## 1.0.3 — Unreleased
+## 1.0.3 — App Store review pending, 2026-10-11
 
 ### Fixed
 

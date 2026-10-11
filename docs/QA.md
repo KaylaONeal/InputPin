@@ -4,7 +4,7 @@ This record separates executed checks from design intent. It is updated before p
 
 ## Local quality candidate — 1.0.3, October 11, 2026
 
-This candidate is built locally and is not published or submitted to Apple. Checks ran on Apple Silicon, macOS 27.0, Xcode 27.0 and Swift 6.4.
+This candidate is installed locally. App Store build 5 was processed as `VALID` and submitted on October 11, 2026; Apple returned `WAITING_FOR_REVIEW` with `AFTER_APPROVAL`. App Review approval and actual store installation remain unverified. Checks ran on Apple Silicon, macOS 27.0, Xcode 27.0 and Swift 6.4.
 
 - **25 Swift tests pass:** 13 core tests and 12 application-model tests. Two additional cases cover source enablement before observer registration and throttled recovery after a missed notification. New regression cases reproduce obsolete failure delays after external recovery, target change and pause/resume. Model tests cover initial-choice persistence, unavailable-source names, unchanged refreshes, paused polling, pending login approval, registration errors, preference isolation and stopping pending restoration. Workspace sleep/wake notifications are simulated in a test; they do not establish physical sleep/wake behavior.
 - **21 Python safety tests pass:** 15 store-release tests, two store-payload permission tests and four artifact-verifier tests. New cases cover ordered three-image upload, exact-set completion, reservation resume, unknown remote assets, invalid image preflight and localized update-note validation. Shell syntax and `git diff --check` pass.
@@ -23,6 +23,14 @@ python3 scripts/render-panels.py
 ```
 
 The gallery is written to `build/quality/panels/index.html`. It never starts the pinning engine or registers login items.
+
+## Mac App Store update — 1.0.3, October 11, 2026
+
+- Xcode archive/export and strict app/installer signatures pass for build 5, with sandbox entitlements and arm64/x86_64. The expanded installer contains one InputPin app and passes ordinary-user read/execute permission and strict signature checks. Package SHA-256 and source fingerprint were verified before upload.
+- Initial upload validation rejected a 0600 signature resource inherited from a restrictive build-process umask. The builder now uses 022 for artifact creation, normalizes only app-bundle permissions and validates the actual expanded payload. The corrected package uploaded without errors and Apple processed build 5 as `VALID`.
+- Six localized screenshots completed processing in the reviewed order. Supplied English hero artwork was uploaded byte-for-byte; the remaining images use native presentation fixtures. Required update notes in both locales were read back exactly before submission.
+- The exact 1.0.3 build 5 was submitted. Apple returned `WAITING_FOR_REVIEW` and `AFTER_APPROVAL`; this does not establish approval or public availability of 1.0.3.
+- Latest local checks: 25 Swift tests, 21 Python tests, universal development build and macOS 14 hosted CI pass. The installed direct trial is 1.0.3 with its preferences preserved; release archives were moved to recoverable Trash to leave one local application bundle. Final native-tool reopens could not locate the panel; the preceding live one-click menu check is recorded above, and no further UI verification is claimed.
 
 ## Executed on the maintainer's Mac
 

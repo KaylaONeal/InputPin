@@ -19,7 +19,7 @@ Automatic input switching can interrupt your typing. InputPin lets you choose an
 
 Choose WeType (微信输入法), ABC, or another enabled keyboard input source. A compact transparent SwiftUI/AppKit panel fits the Mac, with system controls, light/dark appearance and respect for accessibility preferences.
 
-Apple reported Mac App Store version 1.0.2 as **Ready for Sale** on October 11, 2026. The configured United States base price is **US$0.99 once**; regional availability and paid installation have not been verified. Local quality improvements for 1.0.3 are not published yet. See [store release automation](docs/APP_STORE.md).
+Apple reported Mac App Store version 1.0.2 as **Ready for Sale** on October 11, 2026. The configured United States base price is **US$0.99 once**; regional availability and paid installation have not been verified. Version 1.0.3 (build 5) was submitted on October 11 and is waiting for review, with automatic release after approval. See [store release automation](docs/APP_STORE.md).
 
 <p align="center"><img src="docs/assets/panel-light.png" width="300" alt="Light native panel preview"><img src="docs/assets/panel-dark.png" width="300" alt="Dark native panel preview"></p>
 <p align="center"><sub>Native view renders using example state and an opaque material. Actual translucency follows your desktop.</sub></p>
