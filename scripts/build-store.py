@@ -98,7 +98,9 @@ def main():
     if len(packages) != 1:
         raise SystemExit('Expected exactly one exported installer')
     subprocess.run(['pkgutil', '--check-signature', str(packages[0])], check=True)
-    with tempfile.TemporaryDirectory(prefix='store-payload-', dir=ROOT/'.build') as temporary:
+    inspection_root = ROOT/'.build'
+    inspection_root.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='store-payload-', dir=inspection_root) as temporary:
         expanded = Path(temporary)/'expanded'
         subprocess.run(['pkgutil', '--expand-full', str(packages[0]), str(expanded)], check=True, umask=0o022)
         payload_apps = list(expanded.rglob('InputPin.app'))
