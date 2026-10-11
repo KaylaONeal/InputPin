@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import struct
 import subprocess
 import time
 import urllib.request
@@ -15,6 +16,30 @@ from store_api import StoreAPI, StoreError, relation, save_private, source_finge
 ROOT = Path(__file__).resolve().parents[1]
 PRIVATE = Path.home()/'.config/inputpin-release'
 EDITABLE = {'PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED'}
+
+
+def screenshot_assets(directory, locale):
+    """Read ordered locale images, retaining support for the original single-image layout."""
+    root = Path(directory)
+    if not locale or any(character not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-' for character in locale):
+        raise StoreError('Invalid screenshot locale')
+    paths = sorted((root/locale).glob('*.png'))
+    if not paths:
+        paths = [root/f'{locale}.png']
+    if not 1 <= len(paths) <= 10 or not all(path.is_file() for path in paths):
+        raise StoreError(f'Require 1–10 screenshots for {locale}')
+    assets = []
+    for path in paths:
+        raw = path.read_bytes()
+        if (len(raw) < 33 or raw[:8] != b'\x89PNG\r\n\x1a\n' or raw[12:16] != b'IHDR'
+                or raw[25] not in (0, 2)):
+            raise StoreError(f'Screenshot must be an opaque RGB or grayscale PNG: {path.name}')
+        if struct.unpack('>II', raw[16:24]) not in [(1280, 800), (1440, 900), (2560, 1600), (2880, 1800)]:
+            raise StoreError(f'Unsupported Mac screenshot dimensions: {path.name}')
+        assets.append((path, raw, hashlib.md5(raw).hexdigest()))
+    if len({digest for _, _, digest in assets}) != len(assets):
+        raise StoreError(f'Duplicate screenshot content for {locale}')
+    return assets
 
 
 class Release:
@@ -45,6 +70,9 @@ class Release:
         return self.api.all(f'/v1/appStoreVersions/{self.version_id}/appStoreVersionLocalizations')
 
     def metadata(self):
+        for locale, text in self.listing['localizations'].items():
+            if not text.get('whatsNew', '').strip():
+                raise StoreError(f'Require localized update notes for {locale}')
         if not self.release:
             if self.other_drafts:
                 raise StoreError('Another editable version exists; refusing to overwrite it')
@@ -69,7 +97,7 @@ class Release:
             self.upsert('appInfoLocalizations', infos.get(locale), attrs, locale, 'appInfo', 'appInfos', info['id'])
             # Apple creates a matching version localization when an app-info locale is added.
             versions = {v['attributes']['locale']: v for v in self.localizations()}
-            attrs = {k: text[k] for k in ['description', 'keywords']}
+            attrs = {k: text[k] for k in ['description', 'keywords', 'whatsNew']}
             attrs.update({'supportUrl': 'https://github.com/KaylaONeal/InputPin/issues',
                           'marketingUrl': 'https://kaylaoneal.github.io/InputPin/'})
             self.upsert('appStoreVersionLocalizations', versions.get(locale), attrs, locale,
@@ -154,42 +182,60 @@ class Release:
 
     def screenshots(self):
         self.editable()
-        for loc in self.localizations():
+        # Validate every local image before reserving or uploading anything.
+        prepared = [(loc, screenshot_assets(self.args.screenshots, loc['attributes']['locale']))
+                    for loc in self.localizations()]
+        for loc, assets in prepared:
             locale = loc['attributes']['locale']
-            path = self.args.screenshots/f'{locale}.png'
-            if not path.is_file():
-                raise StoreError(f'Missing screenshot: {locale}.png')
-            raw = path.read_bytes()
-            if raw[:8] != b'\x89PNG\r\n\x1a\n' or raw[25] not in (0, 2):
-                raise StoreError('Screenshots must be opaque RGB PNGs')
             sets = self.api.all(f'/v1/appStoreVersionLocalizations/{loc["id"]}/appScreenshotSets')
             target = next((s for s in sets if s['attributes']['screenshotDisplayType'] == 'APP_DESKTOP'), None)
             if not target:
                 target = self.api.create('appScreenshotSets', {'screenshotDisplayType': 'APP_DESKTOP'}, {
                     'appStoreVersionLocalization': relation('appStoreVersionLocalizations', loc['id'])})
-            digest = hashlib.md5(raw).hexdigest()
-            checkpoint = PRIVATE/f'screenshot-{self.app}-{self.version_id}-{locale}-{digest}.json'
             shots = self.api.all(f'/v1/appScreenshotSets/{target["id"]}/appScreenshots')
-            existing = next((s for s in shots if s['attributes'].get('sourceFileChecksum') == digest), None)
-            if not existing and checkpoint.exists():
-                saved = json.loads(checkpoint.read_text())
-                existing = next((s for s in shots if s['id'] == saved['screenshot_id']), None)
-                if not existing:
-                    raise StoreError('Saved screenshot reservation is missing; inspect before reserving another')
-            if existing and existing['attributes']['assetDeliveryState']['state'] == 'COMPLETE':
-                print(f'{locale} screenshot already complete'); continue
-            shot = existing or self.api.create('appScreenshots', {'fileName': path.name, 'fileSize': len(raw)}, {
-                'appScreenshotSet': relation('appScreenshotSets', target['id'])})
-            save_private(checkpoint, {'screenshot_id': shot['id']})
-            for op in shot['attributes'].get('uploadOperations') or []:
-                if not op['url'].startswith('https://'):
-                    raise StoreError('Require HTTPS screenshot upload')
-                req = urllib.request.Request(op['url'], method=op['method'],
-                    data=raw[op['offset']:op['offset']+op['length']],
-                    headers={h['name']: h['value'] for h in op.get('requestHeaders', [])})
-                with urllib.request.urlopen(req, timeout=120) as response: response.read()
-            self.api.patch('appScreenshots', shot['id'], {'sourceFileChecksum': digest, 'uploaded': True})
-            print(f'{locale} screenshot committed; Apple processing')
+            wanted = {digest for _, _, digest in assets}
+            reservations = set()
+            for digest in wanted:
+                checkpoint = PRIVATE/f'screenshot-{self.app}-{self.version_id}-{locale}-{digest}.json'
+                if checkpoint.exists():
+                    reservations.add(json.loads(checkpoint.read_text())['screenshot_id'])
+            if any(shot['attributes'].get('sourceFileChecksum') not in wanted
+                   and shot['id'] not in reservations for shot in shots):
+                raise StoreError('Screenshot set contains different assets; inspect the editable draft before replacing them')
+            ordered = []
+            for path, raw, digest in assets:
+                checkpoint = PRIVATE/f'screenshot-{self.app}-{self.version_id}-{locale}-{digest}.json'
+                existing = next((s for s in shots if s['attributes'].get('sourceFileChecksum') == digest), None)
+                if not existing and checkpoint.exists():
+                    saved = json.loads(checkpoint.read_text())
+                    existing = next((s for s in shots if s['id'] == saved['screenshot_id']), None)
+                    if not existing:
+                        raise StoreError('Saved screenshot reservation is missing; inspect before reserving another')
+                if existing and existing['attributes']['assetDeliveryState']['state'] == 'COMPLETE':
+                    ordered.append(existing['id'])
+                    print(f'{locale}/{path.name} already complete')
+                    continue
+                if existing and existing['attributes']['assetDeliveryState']['state'] == 'FAILED':
+                    raise StoreError('Apple rejected a screenshot; inspect the reserved asset before retrying')
+                shot = existing or self.api.create('appScreenshots', {'fileName': path.name, 'fileSize': len(raw)}, {
+                    'appScreenshotSet': relation('appScreenshotSets', target['id'])})
+                save_private(checkpoint, {'screenshot_id': shot['id']})
+                for op in shot['attributes'].get('uploadOperations') or []:
+                    if not op['url'].startswith('https://'):
+                        raise StoreError('Require HTTPS screenshot upload')
+                    req = urllib.request.Request(op['url'], method=op['method'],
+                        data=raw[op['offset']:op['offset']+op['length']],
+                        headers={h['name']: h['value'] for h in op.get('requestHeaders', [])})
+                    with urllib.request.urlopen(req, timeout=120) as response: response.read()
+                self.api.patch('appScreenshots', shot['id'], {'sourceFileChecksum': digest, 'uploaded': True})
+                ordered.append(shot['id'])
+                print(f'{locale}/{path.name} committed; Apple processing')
+            # Reorder this exact set; never delete another draft's screenshot assets.
+            self.api.request('PATCH', f'/v1/appScreenshotSets/{target["id"]}/relationships/appScreenshots', {
+                'data': [{'type': 'appScreenshots', 'id': identity} for identity in ordered]})
+            actual = self.api.all(f'/v1/appScreenshotSets/{target["id"]}/appScreenshots')
+            if [shot['id'] for shot in actual] != ordered:
+                raise StoreError('Could not verify screenshot ordering')
 
     def upload(self):
         package = self.args.package.resolve()
@@ -230,6 +276,7 @@ class Release:
             raise StoreError('Metadata version does not match VERSION')
         if self.release['attributes']['releaseType'] != 'AFTER_APPROVAL':
             raise StoreError('Require automatic release after approval before submission')
+        self.verify_update_notes()
         self.verify_uploaded_source()
         builds = self.api.all('/v1/builds', **{'filter[app]': self.app,
             'filter[version]': self.args.build_number, 'limit': 200})
@@ -282,14 +329,30 @@ class Release:
         if actual != expected:
             raise StoreError('Existing build has no matching upload/source checkpoint; choose a new build number')
 
+    def verify_update_notes(self):
+        remote = {loc['attributes']['locale']: loc['attributes'].get('whatsNew')
+                  for loc in self.localizations()}
+        for locale, text in self.listing['localizations'].items():
+            expected = text.get('whatsNew', '').strip()
+            if not expected or remote.get(locale) != text['whatsNew']:
+                raise StoreError(f'Update notes are missing or differ from the listing for {locale}')
+
     def screenshots_ready(self):
+        localizations = self.localizations()
+        if not localizations:
+            return False
         ready = True
-        for loc in self.localizations():
+        for loc in localizations:
+            expected = [digest for _, _, digest in screenshot_assets(self.args.screenshots, loc['attributes']['locale'])]
             sets = self.api.all(f'/v1/appStoreVersionLocalizations/{loc["id"]}/appScreenshotSets')
-            shots = [shot for s in sets for shot in self.api.all(f'/v1/appScreenshotSets/{s["id"]}/appScreenshots')]
+            shots = [shot for s in sets if s['attributes']['screenshotDisplayType'] == 'APP_DESKTOP'
+                     for shot in self.api.all(f'/v1/appScreenshotSets/{s["id"]}/appScreenshots')]
             states = [shot['attributes']['assetDeliveryState']['state'] for shot in shots]
-            if 'FAILED' in states: raise StoreError('Apple rejected screenshot processing; inspect the reserved asset')
-            if not states or any(s != 'COMPLETE' for s in states): ready = False
+            if 'FAILED' in states:
+                raise StoreError('Apple rejected screenshot processing; inspect the reserved asset')
+            actual = [shot['attributes'].get('sourceFileChecksum') for shot in shots]
+            if actual != expected or any(state != 'COMPLETE' for state in states):
+                ready = False
         return ready
 
     def release_all(self):

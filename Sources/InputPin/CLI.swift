@@ -1,6 +1,7 @@
 import AppKit
 import Carbon
 import Foundation
+import InputPinCore
 import SwiftUI
 
 enum CLIError: LocalizedError {
@@ -31,20 +32,87 @@ enum CLI {
             print(environment.currentID)
         case "--integration-test": try integrationTest(environment)
         case "--render-panel":
-            try require(args.count == 3 && ["light", "dark"].contains(args[2]), "Usage: --render-panel PATH light|dark")
-            try renderPanel(path: args[1], dark: args[2] == "dark")
-        case "--help": print("InputPin [--list | --current | --version | --select ID | --integration-test | --preview | --render-panel PATH light|dark]")
+            try require((3...4).contains(args.count) && ["light", "dark"].contains(args[2]),
+                        "Usage: --render-panel PATH light|dark [FIXTURE]")
+            try renderPanel(path: args[1], dark: args[2] == "dark", fixture: args.count == 4 ? args[3] : "pinned")
+        case "--help": print("""
+            InputPin [--list | --current | --version | --select ID | --integration-test | --preview | --store-preview]
+            InputPin --render-panel PATH light|dark [FIXTURE]
+            InputPin --render-store PATH 1|2|3
+            Fixtures: pinned, paused, secure, unavailable, retrying, unconfirmed, restoring, session, approval, long-name, contrast
+            Set INPUTPIN_RENDER_LOCALE=en or zh-Hans for localized presentation renders.
+            """)
+        case "--render-store":
+            try require(args.count == 3 && ["1", "2", "3"].contains(args[2]),
+                        "Usage: --render-store PATH 1|2|3")
+            try renderStore(path: args[1], page: Int(args[2])!)
         default: throw CLIError.message("Unknown option. Use --help")
         }
         return true
     }
 
-    private static func renderPanel(path: String, dark: Bool) throws {
+    private static func renderStore(path: String, page: Int) throws {
         _ = NSApplication.shared
         NSApp.setActivationPolicy(.accessory)
-        let model = AppModel.designSnapshot()
-        let view = NSHostingView(rootView: PinPanel(model: model, renderWithOpaqueMaterial: true))
-        view.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        let model = AppModel.designSnapshot(state: page == 3 ? .paused : .pinned)
+        let view = NSHostingView(rootView: StorePresentation(model: model, page: page))
+        view.appearance = NSAppearance(named: .aqua)
+        let bounds = NSRect(x: 0, y: 0, width: 1280, height: 800)
+        let window = NSWindow(contentRect: bounds, styleMask: .borderless, backing: .buffered, defer: false)
+        window.contentView = view
+        view.frame = bounds
+        view.layoutSubtreeIfNeeded()
+        guard let native = view.bitmapImageRepForCachingDisplay(in: bounds) else {
+            throw CLIError.message("Could not render the native store view")
+        }
+        view.cacheDisplay(in: bounds, to: native)
+        guard let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 2560, pixelsHigh: 1600,
+                                           bitsPerSample: 8, samplesPerPixel: 3, hasAlpha: false,
+                                           isPlanar: false, colorSpaceName: .deviceRGB,
+                                           bytesPerRow: 0, bitsPerPixel: 32) else {
+            throw CLIError.message("Could not create store render")
+        }
+        bitmap.size = bounds.size
+        guard let context = NSGraphicsContext(bitmapImageRep: bitmap) else {
+            throw CLIError.message("Could not create RGB store canvas")
+        }
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = context
+        NSColor.white.setFill()
+        bounds.fill()
+        native.draw(in: bounds)
+        NSGraphicsContext.restoreGraphicsState()
+        guard let png = bitmap.representation(using: .png, properties: [:]) else {
+            throw CLIError.message("Could not encode store PNG")
+        }
+        try png.write(to: URL(fileURLWithPath: path))
+        withExtendedLifetime(window) {}
+        print("Store artwork: \(path) (native presentation fixture, not a live screenshot)")
+    }
+
+    private static func renderPanel(path: String, dark: Bool, fixture: String) throws {
+        let state: PinState
+        switch fixture {
+        case "pinned", "approval", "long-name", "contrast": state = .pinned
+        case "paused": state = .paused
+        case "secure": state = .secureInput
+        case "unavailable": state = .unavailable
+        case "retrying": state = .retrying(-50)
+        case "unconfirmed": state = .retrying(0)
+        case "restoring": state = .waitingToRestore
+        case "session": state = .waitingForSession
+        default: throw CLIError.message("Unknown panel fixture. Use --help")
+        }
+        _ = NSApplication.shared
+        NSApp.setActivationPolicy(.accessory)
+        let model = AppModel.designSnapshot(state: state,
+                                            loginStatus: fixture == "approval" ? .requiresApproval : .notRegistered,
+                                            longNames: fixture == "long-name")
+        let view = NSHostingView(rootView: PinPanel(model: model, renderWithOpaqueMaterial: true)
+            .environment(\.colorScheme, dark ? .dark : .light))
+        view.appearance = NSAppearance(named: fixture == "contrast"
+            ? (dark ? .accessibilityHighContrastDarkAqua : .accessibilityHighContrastAqua)
+            : (dark ? .darkAqua : .aqua))
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: PinPanel.width, height: 300),
                               styleMask: .borderless, backing: .buffered, defer: false)
         window.contentView = view
@@ -64,6 +132,7 @@ enum CLI {
     private static func integrationTest(_ environment: SystemInputEnvironment) throws {
         let appIDs: Set<String> = ["io.github.kaylaoneal.InputPin",
                                    "io.github.kaylaoneal.InputPin.SandboxProbe",
+                                   "local.inputpin",
                                    Bundle.main.bundleIdentifier ?? "io.github.kaylaoneal.InputPin"]
         try require(appIDs.allSatisfy { id in
             NSRunningApplication.runningApplications(withBundleIdentifier: id)

@@ -1,8 +1,8 @@
 <p align="center">
   <img src="docs/assets/icon.png" width="96" alt="InputPin's original keycap and pin icon">
 </p>
-<h1 align="center">InputPin</h1>
-<p align="center"><strong>Keep your input in place.</strong><br>A quiet, native macOS utility for an input source that stays yours.</p>
+<h1 align="center">InputPin: Input Method Lock</h1>
+<p align="center"><strong>Pin your chosen input method.</strong><br>Keep your Mac on the input method you choose.</p>
 <p align="center">
   <a href="https://github.com/KaylaONeal/InputPin/actions/workflows/ci.yml"><img src="https://github.com/KaylaONeal/InputPin/actions/workflows/ci.yml/badge.svg" alt="Build and test status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-64748b" alt="MIT license"></a>
@@ -15,11 +15,11 @@
   <a href="docs/README.zh-CN.md">简体中文</a>
 </p>
 
-InputPin restores your chosen keyboard input source when macOS switches away. It lives in the menu bar, offers a single pause/resume switch, and leaves your documents and keystrokes alone.
+Automatic input switching can interrupt your typing. InputPin lets you choose and pin a specific input method, so you can keep typing with your selection. Choose an input method from the menu bar and turn pinning on. If macOS switches away, InputPin restores the one you pinned. Pause pinning whenever you want to switch freely.
 
 Choose WeType (微信输入法), ABC, or another enabled keyboard input source. A compact transparent SwiftUI/AppKit panel fits the Mac, with system controls, light/dark appearance and respect for accessibility preferences.
 
-Mac App Store version 1.0.2 is **Waiting for Review**, priced at **US$0.99 once** in the United States and set to release automatically after approval. It is not available for purchase yet. See [store release automation](docs/APP_STORE.md).
+Apple reported Mac App Store version 1.0.2 as **Ready for Sale** on October 11, 2026. The configured United States base price is **US$0.99 once**; regional availability and paid installation have not been verified. Version 1.0.3 (build 5) was submitted on October 11 and is waiting for review, with automatic release after approval. See [store release automation](docs/APP_STORE.md).
 
 <p align="center"><img src="docs/assets/panel-light.png" width="300" alt="Light native panel preview"><img src="docs/assets/panel-dark.png" width="300" alt="Dark native panel preview"></p>
 <p align="center"><sub>Native view renders using example state and an opaque material. Actual translucency follows your desktop.</sub></p>
@@ -52,7 +52,7 @@ Turn off launch at login before uninstalling. Source-formula uninstall preserves
 - Restores a selected input source after source changes and app activation.
 - Suspends restoration during Secure Event Input, sleep or inactive sessions.
 - Resumes checking after wake and session activation.
-- Offers source selection, one-step pause/resume, and opt-in launch at login.
+- Offers source selection with one click to open the choices, one-step pause/resume, and opt-in launch at login.
 - Retries rejected switches with bounded exponential backoff, up to 30 seconds.
 - Prefers WeType when installed, otherwise uses your current source. It never installs an input method for you.
 

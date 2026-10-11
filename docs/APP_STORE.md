@@ -1,6 +1,6 @@
 # Mac App Store release automation
 
-InputPin **1.0.2 (build 4)** was submitted on October 5, 2026 and is **Waiting for Review**. The United States base price is **US$0.99 paid once**. Release is configured as `AFTER_APPROVAL`; Apple approval and regional eligibility determine actual availability. No store download or paid installation has been verified yet. The MIT source and Homebrew source installation remain free.
+InputPin **1.0.2 (build 4)** was submitted on October 5, 2026. A read-only App Store Connect API check on October 11 returned **`READY_FOR_SALE`**, with `AFTER_APPROVAL` release. The configured United States base price is **US$0.99 paid once**; regional availability, a store download and paid installation have not been verified. **1.0.3 (build 5)** was submitted on October 11, 2026; Apple returned **`WAITING_FOR_REVIEW`** and `AFTER_APPROVAL`. The processed build is `VALID`, and all six ordered English/Chinese screenshots are `COMPLETE`. The first English screenshot uses supplied 1280 × 800 artwork without modifying its bytes. The MIT source and Homebrew source installation remain free.
 
 ## Verified
 
@@ -13,7 +13,7 @@ InputPin **1.0.2 (build 4)** was submitted on October 5, 2026 and is **Waiting f
 - Submitted the exact processed build 4 for version 1.0.2; Apple's API returned `WAITING_FOR_REVIEW` and `AFTER_APPROVAL`.
 - Ten core tests and seven release safety tests pass. The sandbox feasibility probe previously passed three real restorations (211/511/525 ms), pause/resume, secure-input recovery and unavailable-source handling.
 
-Sleep/wake on real hardware, sandboxed login registration, VoiceOver, every supported macOS version, App Review acceptance and an actual paid installation remain unverified. Developer ID notarization for the direct-download channel is separate from store signing and review.
+Sleep/wake on real hardware, sandboxed login registration, VoiceOver, every supported macOS version and an actual paid installation remain unverified. App Review state was refreshed on October 11: `READY_FOR_SALE`. Developer ID notarization for the direct-download channel is separate from store signing and review.
 
 ## One-time signing setup
 
@@ -32,7 +32,7 @@ Store the four review contact fields (`contactFirstName`, `contactLastName`, `co
 Update `VERSION`, `CHANGELOG.md` and listing copy. Review/test the source and refresh screenshots if the UI changes. Commit the verified source before a production release. An existing editable version must match `VERSION`; another version draft is never silently renamed.
 
 ```sh
-python3 scripts/store-release.py release --build-number 4
+python3 scripts/store-release.py release --build-number 5
 ```
 
 Use a new build number for a changed binary. This command creates or uses the exact version, synchronizes metadata, archives/exports with manual local signing, sets/read-verifies USD 0.99, initializes availability if absent, uploads the reviewed local screenshots, uploads the verified package if the build is absent, waits up to 30 minutes for Apple processing, selects that exact valid Mac build, and submits for automatic release after approval. Already submitted versions are read-only. An invalid build or an Apple validation error stops the command; it does not cancel a review, overwrite another draft, revoke credentials or bypass a missing requirement.
@@ -42,12 +42,22 @@ Check status or resume an individual stage:
 ```sh
 python3 scripts/store-release.py status
 python3 scripts/store-release.py screenshots
-python3 scripts/store-release.py submit --build-number 4
+python3 scripts/store-release.py submit --build-number 5
 ```
 
-Other stages are `metadata`, `price`, `availability` and `upload`. `python3 scripts/build-store.py --build-number 4` prepares the package without uploading. The exporter validates app identity, version/build, signing team, sandbox, universal architectures and installer signing; the upload command checks its manifest, source fingerprint and SHA-256 before contacting Apple. Reusing an uploaded build requires a matching local app/version/build/source checkpoint, preventing submission of an old binary after a source edit. Build and screenshot processing both share the wait deadline. Screenshot reservations are checkpointed immediately and resumed by app/version/locale/hash.
+Other stages are `metadata`, `price`, `availability` and `upload`. `python3 scripts/build-store.py --build-number 5` prepares the package without uploading. The exporter validates app identity, version/build, signing team, sandbox, universal architectures, installer signing and read/execute permissions in the expanded installer payload; the upload command checks its manifest, source fingerprint and SHA-256 before contacting Apple. Reusing an uploaded build requires a matching local app/version/build/source checkpoint, preventing submission of an old binary after a source edit. Build and screenshot processing both share the wait deadline. Screenshot reservations are checkpointed immediately and resumed by app/version/locale/hash.
 
-The reviewed English/Chinese PNGs live in the ignored `build/store-screenshots` directory on the signing Mac, named `en-US.png` and `zh-Hans.png`; `--screenshots /path/to/assets` selects another directory. Prepare these once during maintainer setup. The current assets have already been uploaded to Apple. `--store-preview` opens the real native controls in a controlled presentation canvas and does not start source switching or register login items. Refresh assets using the native screenshot tool, and convert to opaque RGB PNG if needed. Presentation windows are solely screenshot fixtures; the normal menu bar popup remains 252 points wide.
+The submitted 1.0.3 assets contain three ordered opaque RGB PNGs per locale. Native presentation exports are 2560 × 1600; supplied English hero artwork is 1280 × 800. They show the selected input method with pinning on, choosing and enabling pinning, and pausing to switch freely. The updated names, subtitles, descriptions, localized update notes and review instructions are in `store/listing.json`; this file records the submitted 1.0.3 listing; the public App Store still serves 1.0.2 until approval and release.
+
+```sh
+python3 scripts/render-store-screenshots.py --app build/InputPin.app
+# Optional: preserve provided artwork as the first English image.
+python3 scripts/render-store-screenshots.py --app build/InputPin.app --hero-image /path/to/artwork.png
+```
+
+Review `build/store-screenshots/index.html`. The images are `en-US/01-pin.png`, `en-US/02-choose.png`, `en-US/03-pause.png`, and the corresponding files under `zh-Hans/`. Generated images contain actual native controls in deterministic presentation states with an illustrative display frame; they are not real-device screenshots or source-restoration evidence. The export never starts source switching, changes preferences or registers login items. The normal popup remains 252 points wide.
+
+The release script uploads locale folders in filename order, verifies the saved order, resumes existing reservations, and requires the exact local set to finish processing before submission. It validates all local images before uploading. Submission also reads back the localized update notes and requires them to match the listing. It supports the legacy single-image `en-US.png` / `zh-Hans.png` layout when no locale folder exists. `--screenshots /path/to/assets` selects another directory. If an editable draft contains different assets, the script stops for inspection instead of deleting them. Published versions and release assets remain immutable. These six assets were uploaded and completed processing before the 1.0.3 submission. New versions initially inherit copies of the previous screenshots; the 1.0.3 draft copies were inspected and replaced, with published 1.0.2 screenshot IDs and checksums verified unchanged.
 
 ## Contributor validation
 

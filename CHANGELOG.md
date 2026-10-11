@@ -2,6 +2,26 @@
 
 All notable changes are recorded here. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 1.0.3 — App Store review pending, 2026-10-11
+
+### Fixed
+
+- Open the input-source choices in one click, without an extra “Choose an input source” submenu.
+- Clear obsolete failed-switch delays after an observed recovery, target change or pause/resume. Preserve failed-switch status throughout the retry delay.
+- Save the initial input-source choice and retain the last known name when the source becomes unavailable.
+- Recover automatically when a missing input source is re-enabled, even if its system notification is missed.
+- Suspend fallback polling while paused, asleep or outside the active session; avoid redrawing unchanged UI or repeatedly enumerating sources and login items.
+
+### Changed
+
+- Position InputPin around pinning the user’s chosen input method, with updated English/Chinese listing names, subtitles and descriptions.
+- Replace abstract store artwork with three localized panels showing the chosen input method, pinning on, and pause to switch freely.
+- Use the full native popover material for readable text over desktop content; keep opaque fallbacks for reduced transparency and increased contrast.
+- Show actual launch-at-login status, including pending approval; leave opening approval settings to the explicit button.
+- Wrap long status labels and current-source names; expose complete source names to accessibility and tooltips. Make the privacy policy available in both distribution editions.
+- Include the privacy manifest in direct builds and provide localized, deterministic panel renders for review of error, recovery and accessibility states.
+- Verify installed-user read and execute permissions in the signed App Store installer before upload.
+
 ## 1.0.2 — 2026-10-05
 
 ### Added

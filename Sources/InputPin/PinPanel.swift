@@ -16,7 +16,7 @@ struct NativeMaterial: NSViewRepresentable {
     func updateNSView(_ view: NSVisualEffectView, context: Context) {
         let opaque = reduceTransparency || contrast == .increased
         view.material = opaque ? .windowBackground : .popover
-        view.alphaValue = opaque ? 1 : 0.08
+        view.alphaValue = 1
     }
 }
 
@@ -41,8 +41,14 @@ struct PinPanel: View {
                 PinMark().frame(width: 24, height: 24)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("InputPin").font(.system(size: 15, weight: .semibold, design: .rounded))
-                    Label(model.title, systemImage: model.state == .pinned ? "pin.fill" : model.enabled ? "hourglass" : "pause.fill")
-                        .font(.system(size: 11)).foregroundStyle(color).lineLimit(1)
+                    Label {
+                        Text(model.title).foregroundStyle(.primary)
+                    } icon: {
+                        Image(systemName: model.state == .pinned ? "pin.fill" : model.enabled ? "hourglass" : "pause.fill")
+                            .foregroundStyle(color)
+                    }
+                        .font(.system(size: 11))
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
                 Menu {
@@ -55,11 +61,9 @@ struct PinPanel: View {
                         NSApp.activate(ignoringOtherApps: true)
                     }
                     Button("GitHub") { NSWorkspace.shared.open(URL(string: "https://github.com/KaylaONeal/InputPin")!) }
-                    #if APP_STORE
-                    Button(Copy.text("Privacy policy", "隐私政策")) {
+                    Button(Copy.privacyPolicy) {
                         NSWorkspace.shared.open(URL(string: "https://kaylaoneal.github.io/InputPin/privacy.html")!)
                     }
-                    #endif
                     Divider()
                     Button(Copy.quit) { NSApp.terminate(nil) }.keyboardShortcut("q")
                 } label: { Image(systemName: "ellipsis").font(.system(size: 13, weight: .medium)).frame(width: 24, height: 24) }
@@ -75,9 +79,12 @@ struct PinPanel: View {
                         }
                         ForEach(model.sources) { source in Text(source.name).tag(source.id) }
                     }
+                    // Keep the choices here rather than creating another submenu.
+                    .pickerStyle(.inline)
                 } label: {
                     HStack(spacing: 6) {
-                        Text(model.targetName).font(.system(size: 14, weight: .medium)).lineLimit(1)
+                        Text(model.targetName).font(.system(size: 14, weight: .medium))
+                            .lineLimit(1)
                         Image(systemName: "chevron.down").font(.system(size: 9, weight: .semibold)).foregroundStyle(.secondary)
                         Spacer(minLength: 0)
                     }
@@ -85,7 +92,8 @@ struct PinPanel: View {
                     .contentShape(Rectangle())
                 }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden)
-                .accessibilityLabel("\(Copy.choose): \(model.targetName)")
+                .accessibilityLabel(Copy.choose).accessibilityValue(model.targetName)
+                .help(model.targetName)
                 Text(model.detail).font(.system(size: 11)).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true).frame(minHeight: 26, alignment: .topLeading)
             }
@@ -97,11 +105,13 @@ struct PinPanel: View {
                     Toggle(Copy.enabled, isOn: Binding(get: { model.enabled }, set: model.setEnabled))
                         .labelsHidden().toggleStyle(.switch).controlSize(.small)
                 }
-                row(Copy.login, description: Copy.loginDetail) {
+                row(Copy.login, description: Copy.loginDetail, status: model.loginStateText) {
                     Toggle(Copy.login, isOn: Binding(
                         get: { model.loginStatus == .enabled || model.loginStatus == .requiresApproval },
                         set: model.setLogin
                     )).labelsHidden().toggleStyle(.switch).controlSize(.small)
+                        .disabled(model.loginStatus == .notFound)
+                        .accessibilityValue(model.loginStateText)
                 }
                 if model.loginStatus == .requiresApproval {
                     Button(Copy.approve) { SMAppService.openSystemSettingsLoginItems() }
@@ -113,7 +123,9 @@ struct PinPanel: View {
                 Divider().opacity(0.4)
                 HStack(spacing: 6) {
                     Image(systemName: "keyboard").font(.system(size: 10))
-                    Text("\(Copy.current) · \(model.currentName)").font(.system(size: 11)).lineLimit(1).truncationMode(.middle)
+                    Text("\(Copy.current) · \(model.currentName)").font(.system(size: 11))
+                        .lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                        .help(model.currentName)
                     Spacer(minLength: 4)
                     Button(Copy.settings) {
                         NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension")!)
@@ -127,9 +139,10 @@ struct PinPanel: View {
             if renderWithOpaqueMaterial { Color(nsColor: .windowBackgroundColor) }
             else {
                 ZStack {
-                    Color(nsColor: .windowBackgroundColor)
-                        .opacity(reduceTransparency || contrast == .increased ? 1 : 0.04)
                     NativeMaterial()
+                    if reduceTransparency || contrast == .increased {
+                        Color(nsColor: .windowBackgroundColor)
+                    }
                 }
             }
         }
@@ -142,9 +155,15 @@ struct PinPanel: View {
         } message: { Text(model.errorMessage ?? "") }
     }
 
-    private func row<Control: View>(_ title: String, description: String, @ViewBuilder control: () -> Control) -> some View {
+    private func row<Control: View>(_ title: String, description: String, status: String? = nil,
+                                    @ViewBuilder control: () -> Control) -> some View {
         HStack(spacing: 10) {
-            Text(title).font(.system(size: 12, weight: .medium))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.system(size: 12, weight: .medium))
+                if let status {
+                    Text(status).font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+            }
             Spacer(minLength: 0)
             control().help(description).accessibilityHint(description)
         }

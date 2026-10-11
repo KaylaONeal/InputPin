@@ -9,5 +9,6 @@ let package = Package(
         .target(name: "InputPinCore"),
         .executableTarget(name: "InputPin", dependencies: ["InputPinCore"]),
         .testTarget(name: "InputPinCoreTests", dependencies: ["InputPinCore"]),
+        .testTarget(name: "InputPinTests", dependencies: ["InputPin"]),
     ]
 )

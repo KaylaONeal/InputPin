@@ -127,7 +127,46 @@ final class PinEngineTests: XCTestCase {
         XCTAssertEqual(pin.state, .secureInput)
         environment.isSecure = false
         pin.check(at: 10.2)
-        XCTAssertEqual(pin.state, .waitingToRestore)
+        XCTAssertEqual(pin.state, .retrying(-50))
         XCTAssertEqual(environment.selections.count, 1)
+    }
+
+    func testExternalRecoveryClearsFailedSwitchBackoff() {
+        let (pin, environment) = fixture()
+        environment.result = -50
+        for time in [10.0, 12, 16, 24, 40] { pin.check(at: time) }
+        XCTAssertEqual(pin.nextAttempt, 70)
+        environment.currentID = "wetype"
+        pin.check(at: 41)
+        XCTAssertEqual(pin.state, .pinned)
+        environment.currentID = "abc"
+        environment.result = 0
+        pin.check(at: 42)
+        XCTAssertEqual(environment.currentID, "wetype")
+        XCTAssertEqual(pin.restoreCount, 1)
+    }
+
+    func testChangingTargetDoesNotInheritAnotherSourcesBackoff() {
+        let (pin, environment) = fixture()
+        environment.result = -50
+        pin.check(at: 10)
+        pin.targetID = "another"
+        environment.result = 0
+        pin.check(at: 10.1)
+        XCTAssertEqual(environment.currentID, "another")
+        XCTAssertEqual(pin.state, .pinned)
+    }
+
+    func testResumeDoesNotInheritPreviousFailedSwitchBackoff() {
+        let (pin, environment) = fixture()
+        environment.result = -50
+        pin.check(at: 10)
+        pin.enabled = false
+        pin.check(at: 10.1)
+        XCTAssertEqual(pin.state, .paused)
+        environment.result = 0
+        pin.enabled = true
+        pin.check(at: 10.2)
+        XCTAssertEqual(pin.state, .pinned)
     }
 }

@@ -1,5 +1,5 @@
 {
-  "status": "waiting-for-review",
+  "status": "submitted-for-review",
   "platform": "MAC_OS",
   "bundleId": "io.github.kaylaoneal.InputPin",
   "category": "UTILITIES",
@@ -16,20 +16,22 @@
   "dataCollection": "none",
   "localizations": {
     "en-US": {
-      "name": "InputPin",
-      "subtitle": "Keep your input source pinned",
+      "name": "InputPin: Input Method Lock",
+      "subtitle": "Pin your chosen input method",
       "keywords": "keyboard,input,language,typing,menu bar,utility,pin",
-      "description": "Keep your chosen macOS input source in place. Choose an enabled keyboard input source from a small native menu bar panel, and InputPin restores it when macOS switches away. Pause at any time to switch freely. Secure input takes priority, and launch at login is optional.\n\nWorks with built-in input sources and installed input methods. InputPin does not install an input method or change its internal Chinese/English mode. While pinning is enabled, intentional input-source changes are also restored.\n\nNo accounts, analytics, keystroke collection, subscription, or Accessibility permission. MIT-licensed source is available on GitHub; the App Store edition is a paid convenience distribution."
+      "description": "Keep your Mac on the input method you choose.\n\nAutomatic input switching can interrupt your typing. InputPin lets you choose and pin a specific input method, so you can keep typing with your selection.\n\nChoose an input method from the menu bar and turn pinning on. If macOS switches to another input source, InputPin restores the one you pinned. Pause pinning whenever you want to switch freely.\n\nHow to use InputPin\n• Click the pin in the menu bar, then click the input method name to see your choices directly.\n• Choose an enabled input source and turn on “Keep this input source”.\n• Turn pinning off before switching to another input source. While pinning is on, manual input-source changes are also restored.\n• InputPin pins a macOS input source. It does not control the Chinese/English mode inside an input method.\n\nWorks with built-in input sources and installed input methods. InputPin does not install an input method. Secure input takes priority; pinning waits during secure input, sleep and inactive sessions. Launch at login is optional.\n\nNo accounts, analytics, keystroke collection, subscription, or Accessibility permission. MIT-licensed source is available on GitHub; the App Store edition is a paid convenience distribution.",
+      "whatsNew": "• Open input method choices with a single click.\n• Clearer pinning, pause and launch-at-login status.\n• More reliable recovery after input source changes.\n• Updated screenshots and instructions for choosing and pinning an input method."
     },
     "zh-Hans": {
-      "name": "InputPin",
-      "subtitle": "固定输入法，安心打字",
+      "name": "InputPin — 输入法固定",
+      "subtitle": "固定指定输入法，避免自动切换",
       "keywords": "输入法,固定,键盘,打字,语言,菜单栏,工具",
-      "description": "固定你选择的 macOS 输入法。当系统切换到其他输入法时，InputPin 自动恢复你的选择。原生菜单栏弹窗，随时暂停，安全输入优先，开机启动由你决定。\n\n支持系统自带的输入源和已安装的输入法。InputPin 不安装输入法，也不控制输入法内部的中英文模式。启用固定时，手动切换到其他输入法也会被恢复。\n\n无需账户、订阅或辅助功能权限，不采集按键，不做统计追踪。源码在 GitHub 以 MIT 许可证公开；App Store 版为付费的便捷安装渠道。"
+      "description": "固定指定输入法，减少自动切换带来的打断。\n\nMac 经常自动切换输入法，打断你的输入节奏。InputPin 让你指定并固定一个输入法，让 Mac 保持使用你的选择。\n\n只需在菜单栏中选择要固定的输入法，开启固定即可。当系统切换到其他输入源时，InputPin 会自动恢复你指定的输入法。需要使用其他输入法时，随时暂停固定。\n\n使用说明\n• 点击菜单栏图钉，再点击输入法名称，直接展开可选输入法。\n• 选择系统中已启用的输入源，打开“固定此输入法”开关。\n• 需要使用其他输入法时，先暂停固定。固定期间，手动切换到其他输入源也会被恢复。\n• 固定对象是 macOS 输入源，不控制同一个输入法内部的中英文模式。\n\n支持系统自带的输入源和已安装的输入法，本工具不替你安装输入法。安全输入优先；安全输入、休眠和非活动登录会话期间，固定会等待。登录时启动由你决定。\n\n无需账户、订阅或辅助功能权限，不采集按键，不做统计追踪。源码在 GitHub 以 MIT 许可证公开；App Store 版为付费的便捷安装渠道。",
+      "whatsNew": "• 点击输入法名称一次，直接展开可选输入法。\n• 更清楚地显示固定、暂停和登录时启动状态。\n• 改善输入源切换后的恢复稳定性。\n• 更新截图和使用说明，更直观地展示如何固定指定输入法。"
     }
   },
   "reviewNotes": "InputPin is a menu bar utility using public Carbon Text Input Source APIs. No login or third-party input method is required: reviewers can test using two enabled Apple keyboard input sources. Select one in InputPin, switch to the other via the macOS input menu, and observe restoration. Turn off Keep this input source to allow switching freely. Secure input pauses restoration. The app has no global keyboard event monitor; an open panel has a temporary mouse-only dismissal monitor. Test launch-at-login only with explicit opt-in.",
   "appStoreId": "6819264969",
-  "version": "1.0.2",
-  "buildNumber": "4"
+  "version": "1.0.3",
+  "buildNumber": "5"
 }
