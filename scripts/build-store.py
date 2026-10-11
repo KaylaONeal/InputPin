@@ -5,10 +5,32 @@ import hashlib
 import json
 from pathlib import Path
 import plistlib
+import stat
 import subprocess
+import tempfile
 from store_api import source_fingerprint
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def bundle_paths(app):
+    return [path for path in [app, *app.rglob('*')] if not path.is_symlink()]
+
+
+def make_bundle_readable(app):
+    """Distribution payloads must be readable/executable by ordinary installed users."""
+    for path in bundle_paths(app):
+        mode = stat.S_IMODE(path.stat().st_mode)
+        required = 0o555 if path.is_dir() or mode & 0o111 else 0o444
+        path.chmod(mode | required)
+
+
+def verify_bundle_permissions(app):
+    for path in bundle_paths(app):
+        mode = stat.S_IMODE(path.stat().st_mode)
+        required = 0o5 if path.is_dir() or mode & 0o111 else 0o4
+        if mode & required != required:
+            raise ValueError(f'Non-root users cannot read/execute bundle entry: {path.relative_to(app)}')
 
 
 def main():
@@ -23,8 +45,8 @@ def main():
     archive = ROOT/'build/InputPin.xcarchive'
     version = (ROOT/'VERSION').read_text().strip()
     source_sha256 = source_fingerprint(ROOT)
-    subprocess.run(['swift', 'scripts/make-icon.swift', 'build/store-assets'], cwd=ROOT, check=True)
-    subprocess.run(['xcodegen', 'generate', '--spec', 'project.yml'], cwd=ROOT, check=True)
+    subprocess.run(['swift', 'scripts/make-icon.swift', 'build/store-assets'], cwd=ROOT, check=True, umask=0o022)
+    subprocess.run(['xcodegen', 'generate', '--spec', 'project.yml'], cwd=ROOT, check=True, umask=0o022)
     export = ROOT/'build/StoreExportOptions.plist'
     export.write_bytes(plistlib.dumps({
         'method': 'app-store-connect', 'destination': 'export', 'signingStyle': 'manual',
@@ -43,15 +65,19 @@ def main():
         ('export', ['xcodebuild', '-exportArchive', '-archivePath', str(archive),
          '-exportPath', str(out), '-exportOptionsPlist', str(export)]),
     ]
+    app = archive/'Products/Applications/InputPin.app'
     for name, command in stages:
         log = ROOT/f'build/store-{name}.log'
         with log.open('w') as handle:
             log.chmod(0o600)
-            result = subprocess.run(command, cwd=ROOT, stdout=handle, stderr=subprocess.STDOUT)
+            result = subprocess.run(command, cwd=ROOT, stdout=handle, stderr=subprocess.STDOUT, umask=0o022)
         if result.returncode:
             raise SystemExit(f'{name} failed; inspect {log.name} locally')
         print(f'{name}: PASS', flush=True)
-    app = archive/'Products/Applications/InputPin.app'
+        if name == 'archive':
+            # Also repair stale derived products built under a restrictive parent umask.
+            make_bundle_readable(app)
+            verify_bundle_permissions(app)
     subprocess.run(['codesign', '--verify', '--deep', '--strict', str(app)], check=True)
     signed = subprocess.run(['codesign', '-d', '--entitlements', ':-', str(app)], capture_output=True, check=True)
     entitlements = plistlib.loads(signed.stdout)
@@ -72,6 +98,15 @@ def main():
     if len(packages) != 1:
         raise SystemExit('Expected exactly one exported installer')
     subprocess.run(['pkgutil', '--check-signature', str(packages[0])], check=True)
+    with tempfile.TemporaryDirectory(prefix='store-payload-', dir=ROOT/'.build') as temporary:
+        expanded = Path(temporary)/'expanded'
+        subprocess.run(['pkgutil', '--expand-full', str(packages[0]), str(expanded)], check=True, umask=0o022)
+        payload_apps = list(expanded.rglob('InputPin.app'))
+        if len(payload_apps) != 1:
+            raise SystemExit('Expected exactly one InputPin app in the installer payload')
+        verify_bundle_permissions(payload_apps[0])
+        subprocess.run(['codesign', '--verify', '--deep', '--strict', str(payload_apps[0])], check=True)
+    print('Installer payload permissions and signature: PASS')
     if source_fingerprint(ROOT) != source_sha256:
         raise SystemExit('Source changed during archive/export; use a new verified build')
     manifest = out/'verified.json'

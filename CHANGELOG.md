@@ -20,6 +20,7 @@ All notable changes are recorded here. Versions follow [Semantic Versioning](htt
 - Show actual launch-at-login status, including pending approval; leave opening approval settings to the explicit button.
 - Wrap long status labels and current-source names; expose complete source names to accessibility and tooltips. Make the privacy policy available in both distribution editions.
 - Include the privacy manifest in direct builds and provide localized, deterministic panel renders for review of error, recovery and accessibility states.
+- Verify installed-user read and execute permissions in the signed App Store installer before upload.
 
 ## 1.0.2 — 2026-10-05
 
