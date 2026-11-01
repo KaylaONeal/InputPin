@@ -34,7 +34,7 @@ jobs:
         run: bash scripts/probe-app-store.sh
       - name: Archive development candidate (not a public release)
         run: ditto -c -k --keepParent build/InputPin.app build/InputPin-development.zip
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: InputPin-development-universal
           path: build/InputPin-development.zip
